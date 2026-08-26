@@ -1,0 +1,114 @@
+/* ============================================================
+   Sulam — Color tokens  (per Wix Brief v4 + accent overridden to Clay)
+   Charcoal + Linen primary · CLAY (terracotta) is the accent.
+   Taupe carries body text. Ice is the cold-exposure accent only.
+   (The brief specifies a Sage accent; the client prefers the original
+    terracotta Clay, so the accent ramp is Clay. Swap --clay-* back to
+    the sage greens to return to the brief palette.)
+   ============================================================ */
+
+:root {
+  /* ---- Core brand palette ---- */
+  --charcoal:   #2A2520; /* primary dark — hero, nav, footer, offers, cold */
+  --linen:      #F5F0E8; /* primary light — most section bgs, button text */
+  --cream:      #FAF7F2; /* page bg, card surfaces */
+  --stone:      #C8BFB0; /* borders, dividers, secondary structure */
+  --taupe:      #7A6E62; /* body text on light backgrounds */
+  --clay:       #B5704F; /* ACCENT — buttons, rung numbers, labels, dividers */
+
+  /* ---- Charcoal steps (dark surfaces & their borders) ---- */
+  --charcoal-900: #2A2520;
+  --charcoal-800: #3A3530; /* offer-card fill / borders on dark */
+  --charcoal-700: #4A443D;
+
+  /* ---- Stone steps (warm neutral structure) ---- */
+  --stone-100: #EDE7DC;
+  --stone-200: #DED5C7;
+  --stone-300: #C8BFB0; /* = --stone */
+  --stone-400: #ABA192;
+  --stone-500: #8C8175;
+
+  /* ---- Taupe steps (warm body-text family) ---- */
+  --taupe-600: #645A50;
+  --taupe-500: #7A6E62; /* = --taupe */
+  --taupe-400: #948A7E;
+
+  /* ---- Clay steps (the single accent — terracotta, state ramps) ---- */
+  --clay-700: #8A4527; /* press */
+  --clay-600: #9E5536; /* hover */
+  --clay-500: #B5704F; /* = --clay, base accent */
+  --clay-400: #C68A6B;
+  --clay-200: #E6CDBF;
+  --clay-100: #F0DDD2; /* soft tint bg */
+
+  /* ---- Ice — COLD-EXPOSURE accent only (never elsewhere) ---- */
+  --ice:       #D6EAF8; /* cold accent — section bg & card top-border */
+  --ice-300:   #AED1EC; /* slightly deeper ice, for strokes on dark */
+  --cold-900:  #1E2A2A; /* deep teal-charcoal — cold offer card fill */
+  --cold-800:  #283838; /* cold card border / raised */
+
+  /* ---- Functional hues (muted, earthy — used sparingly) ---- */
+  --moss-600:  #5C7152; /* positive / success — muted green, decoupled from accent */
+  --moss-100:  #E3ECE4;
+  --ochre-500: #B8893C; /* warning */
+  --ochre-100: #EFE3CB;
+  --brick-600: #A2503F; /* danger */
+  --brick-100: #ECD6CF;
+
+  --white: #FFFFFF;
+
+  /* ============================================================
+     Semantic aliases — reference these in components
+     ============================================================ */
+
+  /* Text */
+  --text-primary:    var(--charcoal-900); /* headlines, strong text on light */
+  --text-body:       var(--taupe-500);    /* body copy on light */
+  --text-secondary:  var(--taupe-500);
+  --text-muted:      var(--stone-500);
+  --text-disabled:   var(--stone-400);
+  --text-accent:     var(--clay-600);     /* clay labels / numbers / links */
+  --text-link:       var(--clay-600);
+  --text-on-dark:        var(--linen);
+  --text-on-dark-muted:  var(--stone-300);
+
+  /* Surfaces */
+  --surface-canvas:  var(--cream);        /* page background */
+  --surface-card:    var(--cream);        /* card surfaces */
+  --surface-light:   var(--linen);        /* most section backgrounds */
+  --surface-ink:     var(--charcoal-900); /* hero / nav / footer / offers */
+  --surface-ink-raised: var(--charcoal-800);
+  --surface-accent-soft: var(--clay-100);
+  --surface-cold:      var(--cold-900);   /* cold offer card */
+  --surface-cold-soft: var(--ice);        /* cold section background */
+
+  /* Borders */
+  --border-subtle:   var(--stone-200);
+  --border-default:  var(--stone-300);
+  --border-strong:   var(--stone-400);
+  --border-on-dark:  var(--charcoal-700);
+  --border-accent:   var(--clay-500);
+  --border-cold:     var(--ice-300);
+
+  /* Action — Clay (the one accent) */
+  --action-primary:        var(--clay-500);
+  --action-primary-hover:  var(--clay-600);
+  --action-primary-press:  var(--clay-700);
+  --action-primary-text:   var(--linen);
+
+  /* Action — Linen (light button on dark, e.g. nav Book Now) */
+  --action-light:        var(--linen);
+  --action-light-hover:  var(--white);
+  --action-light-text:   var(--charcoal-900);
+
+  /* Focus */
+  --focus-ring: var(--clay-500);
+
+  /* Status */
+  --status-positive:    var(--moss-600);
+  --status-positive-bg: var(--moss-100);
+  --status-warning:     var(--ochre-500);
+  --status-warning-bg:  var(--ochre-100);
+  --status-danger:      var(--brick-600);
+  --status-danger-bg:   var(--brick-100);
+}

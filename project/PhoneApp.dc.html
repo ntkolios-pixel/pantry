@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="./image-slot.js"></script>
+  <style>
+    :root{
+      --cream:#F4EFE4; --paper:#FFFFFF; --linen:#FBF8F1; --ink:#4A3722; --ink-soft:#8A7458; --ink-faint:#B5A68E; --syrup:#7A5330;
+      --line:#E4DAC8; --olive:#9A6B45; --olive-soft:#EFE3D3; --marigold:#9A6B45; --marigold-soft:#EFE3D3;
+      --marigold-ink:#6B4726; --rust:#A25A34; --rust-soft:#F6E3D7; --butter:#9A8560; --butter-soft:#EFE7DA;
+      --sage:#6E7548; --sage-soft:#EEEFDC; --success:#6E7548; --success-soft:#EEEFDC;
+      --berry:#8E5A5C; --berry-soft:#F6E4E2; --slate:#7B7166; --slate-soft:#EFEBE4; --sky:#5F7480; --sky-soft:#E6EDEF;
+      --font-display:'Cormorant Garamond', Georgia, serif; --font-ui:'DM Sans', system-ui, sans-serif;
+    }
+    body{margin:0}
+  </style>
+</helmet>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+  <div style="height:100%;display:flex;flex-direction:column;background:var(--cream);font-family:var(--font-ui)">
+
+    <sc-if value="{{ isWelcome }}" hint-placeholder-val="{{ true }}">
+      <div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px 32px;gap:34px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+          <div style="font-family:var(--font-display);font-style:italic;font-weight:400;font-size:32px;color:var(--ink);line-height:1.1">Welcome to Pantry</div>
+          <div style="font-size:14px;color:var(--ink-soft);line-height:1.5;max-width:260px">Plan the week. Shop what's missing. Cook what your family loves.</div>
+        </div>
+        <div style="width:100%;display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:2px">
+          <div style="display:flex;align-items:center;gap:11px;padding:14px 14px;background:#FFFDF7;text-align:left">
+            <div style="flex-shrink:0;width:26px;height:26px;border-radius:50%;background:#F2EADB;color:var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-style:italic;font-size:14px">1</div>
+            <span style="font-size:12.5px;color:var(--ink-soft)">A week of dinners, built around your recipes</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:11px;padding:14px 14px;background:#FFFDF7;text-align:left">
+            <div style="flex-shrink:0;width:26px;height:26px;border-radius:50%;background:#F0E7D4;color:var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-style:italic;font-size:14px">2</div>
+            <span style="font-size:12.5px;color:var(--ink-soft)">A grocery list of only what you're missing</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:11px;padding:14px 14px;background:#FFFDF7;text-align:left">
+            <div style="flex-shrink:0;width:26px;height:26px;border-radius:50%;background:#F2EADB;color:var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-style:italic;font-size:14px">3</div>
+            <span style="font-size:12.5px;color:var(--ink-soft)">Every eater's likes and dislikes remembered</span>
+          </div>
+        </div>
+        <div onClick="{{ goSignup }}" style="margin-top:14px;width:100%;text-align:center;padding:13px 0;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;background:var(--syrup);color:#FFFDF7">Get started</div>
+        <div onClick="{{ goSignup }}" style="font-size:12.5px;color:var(--ink-soft);cursor:pointer;text-decoration:underline">I already have an account</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isSignup }}" hint-placeholder-val="{{ false }}">
+      <div style="height:100%;display:flex;flex-direction:column;justify-content:center;padding:28px;gap:14px">
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--marigold)">Step 1 of 4</div>
+        <div style="font-family:var(--font-display);font-style:italic;font-size:24px;color:var(--ink);margin-bottom:6px">Create your account</div>
+        <input value="{{ signupName }}" onChange="{{ setSignupName }}" placeholder="Your name" style="font-family:var(--font-ui);font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px 14px;outline:none" />
+        <input value="{{ signupEmail }}" onChange="{{ setSignupEmail }}" placeholder="Email" style="font-family:var(--font-ui);font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px 14px;outline:none" />
+        <input value="{{ signupPassword }}" onChange="{{ setSignupPassword }}" placeholder="Password" type="password" style="font-family:var(--font-ui);font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px 14px;outline:none" />
+        <div onClick="{{ goHousehold }}" style="margin-top:8px;text-align:center;padding:13px 0;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;background:var(--syrup);color:#FFFDF7">Create account</div>
+        <div style="text-align:center;font-size:11.5px;color:var(--ink-faint);margin-top:4px">By continuing you agree to keep it kosher — and to our Terms.</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isHousehold }}" hint-placeholder-val="{{ false }}">
+      <div style="height:100%;overflow:auto;display:flex;flex-direction:column;justify-content:center;padding:32px 28px;gap:18px">
+        <div>
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--marigold);margin-bottom:9px">Step 2 of 4</div>
+          <div style="font-family:var(--font-display);font-style:italic;font-size:24px;color:var(--ink);margin-bottom:6px">Who are you cooking for?</div>
+          <div style="font-size:12.5px;color:var(--ink-soft);line-height:1.5">Add everyone in your household — we'll ask about their preferences next.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ householdMembers }}" as="hm" hint-placeholder-count="2">
+            <div style="display:flex;gap:8px;align-items:center">
+              <input value="{{ hm.name }}" onChange="{{ hm.setName }}" placeholder="Name" style="flex:2;min-width:0;box-sizing:border-box;font-family:var(--font-ui);font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 12px;outline:none" />
+              <input value="{{ hm.age }}" onChange="{{ hm.setAge }}" placeholder="Age" style="flex:1;min-width:0;box-sizing:border-box;font-family:var(--font-ui);font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 12px;outline:none" />
+              <div onClick="{{ hm.remove }}" style="flex-shrink:0;width:28px;height:36px;display:flex;align-items:center;justify-content:center;color:var(--ink-faint);cursor:pointer;font-size:18px;line-height:1">×</div>
+            </div>
+          </sc-for>
+          <div onClick="{{ addHouseholdMember }}" style="text-align:center;padding:11px 0;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:var(--paper);border:1px dashed var(--line);color:var(--ink-soft)">+ Add family member</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:12.5px;color:var(--ink-soft)">Do you keep kosher?</div>
+          <div onClick="{{ toggleKosher }}" style="width:42px;height:24px;border-radius:999px;background:{{ kosherToggleBg }};position:relative;cursor:pointer">
+            <div style="position:absolute;top:2px;left:{{ kosherToggleLeft }};width:20px;height:20px;border-radius:50%;background:var(--paper)"></div>
+          </div>
+        </div>
+        <div onClick="{{ goSetup }}" style="margin-top:4px;text-align:center;padding:13px 0;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;background:var(--syrup);color:#FFFDF7">Continue</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isSetup }}" hint-placeholder-val="{{ false }}">
+      <div style="height:100%;overflow:auto;padding:56px 28px 32px;display:flex;flex-direction:column;gap:22px">
+        <div>
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--marigold);margin-bottom:9px">Step 3 of 4</div>
+          <div style="font-family:var(--font-display);font-style:italic;font-size:24px;color:var(--ink);margin-bottom:6px">Tell us about your eaters</div>
+          <div style="font-size:12.5px;color:var(--ink-soft);line-height:1.5">Likes, dislikes, allergies — anything that helps us plan well for everyone.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <sc-for list="{{ familyList }}" as="fam" hint-placeholder-count="4">
+            <div style="background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden">
+              <div style="display:flex;align-items:center;gap:10px;padding:11px 13px;background:{{ fam.tintBg }};border-bottom:1px solid var(--line)">
+                <div style="flex-shrink:0;width:30px;height:30px;border-radius:50%;background:{{ fam.tintFg }};color:var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-style:italic;font-size:15px;font-weight:600">{{ fam.initial }}</div>
+                <span style="font-family:var(--font-display);font-style:italic;font-size:17px;color:var(--ink)">{{ fam.name }}</span>
+                <span style="margin-left:auto;font-size:10.5px;font-weight:600;color:var(--ink-faint)">{{ fam.age }}</span>
+              </div>
+              <div style="padding:12px 13px 13px">
+                <textarea value="{{ fam.note }}" onChange="{{ fam.setNote }}" rows="3" placeholder="Likes, dislikes, allergies\u2026" style="width:100%;box-sizing:border-box;font-family:var(--font-ui);font-size:13px;color:var(--ink-soft);line-height:1.45;background:var(--linen);border:1px solid var(--line);border-radius:8px;padding:9px 10px;resize:vertical;outline:none"></textarea>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div onClick="{{ goRecipes }}" style="margin-top:6px;text-align:center;padding:13px 0;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;background:var(--syrup);color:#FFFDF7">Continue</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isRecipes }}" hint-placeholder-val="{{ false }}">
+      <div style="height:100%;overflow:auto;display:flex;flex-direction:column;justify-content:center;padding:32px 28px;gap:22px">
+        <div>
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--marigold);margin-bottom:9px">Step 4 of 4</div>
+          <div style="font-family:var(--font-display);font-style:italic;font-size:24px;color:var(--ink);margin-bottom:6px">Add a few recipes</div>
+          <div style="font-size:12.5px;color:var(--ink-soft);line-height:1.5">Start your library so we can build a plan around meals you already make. Add more anytime.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <sc-for list="{{ setupRecipes }}" as="sr" hint-placeholder-count="0">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:var(--paper);border:1px solid var(--line);border-radius:8px">
+              <span style="font-size:13.5px;color:var(--ink)">{{ sr.title }}</span>
+              <span style="font-size:11px;color:var(--ink-faint)">Added</span>
+            </div>
+          </sc-for>
+          <div style="display:flex;gap:8px">
+            <input value="{{ setupRecipeTitle }}" onChange="{{ setSetupRecipeTitle }}" placeholder="Recipe title" style="flex:1;font-family:var(--font-ui);font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 12px;outline:none" />
+            <div onClick="{{ addSetupRecipe }}" style="flex-shrink:0;display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:8px;background:var(--marigold);color:var(--paper);font-size:19px;font-weight:600;cursor:pointer">+</div>
+          </div>
+        </div>
+
+        <div onClick="{{ goEnterApp }}" style="margin-top:6px;text-align:center;padding:13px 0;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;background:var(--syrup);color:#FFFDF7">Start planning</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;overflow:auto">
+      <div style="padding:64px 18px 24px;display:flex;align-items:center;gap:10px;position:sticky;top:0;background:var(--cream);z-index:5;border-bottom:1.5px dashed var(--line)">
+        <div onClick="{{ goHome }}" style="width:32px;height:32px;border-radius:8px;background:var(--syrup);color:#FFFDF7;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:19px;flex-shrink:0;cursor:pointer">{{ avatarLetter }}</div>
+        <div style="flex:1">
+          <div style="font-family:var(--font-display);font-style:italic;font-weight:400;font-size:25px;color:var(--ink);line-height:1.15">{{ headerTitle }}</div>
+          <div style="font-size:11.5px;color:var(--ink-soft);margin-top:4px">{{ headerSubtitle }}</div>
+        </div>
+        <div onClick="{{ openFamily }}" style="flex-shrink:0;width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink-soft)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"></path><path d="M12 4v2M12 18v2M4 12h2M18 12h2M6.3 6.3l1.4 1.4M16.3 16.3l1.4 1.4M6.3 17.7l1.4-1.4M16.3 7.7l1.4-1.4"></path></svg>
+        </div>
+      </div>
+
+      <sc-if value="{{ isFirstHome }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:24px 18px 90px;display:flex;flex-direction:column;gap:16px">
+          <div style="font-family:var(--font-display);font-style:italic;font-size:23px;color:var(--ink);line-height:1.25">You're all set up{{ firstNameSuffix }}</div>
+          <div style="font-size:13px;color:var(--ink-soft);line-height:1.5">{{ firstHomeSummary }}</div>
+          <div onClick="{{ buildFirstWeek }}" style="margin-top:8px;text-align:center;padding:13px 0;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;background:var(--syrup);color:#FFFDF7">Build my first week</div>
+          <div onClick="{{ goLibrary }}" style="text-align:center;padding:13px 0;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;background:var(--paper);border:1px solid var(--line);color:var(--ink-soft)">Add more recipes first</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isReturningHome }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:24px 18px 90px;display:flex;flex-direction:column;gap:22px">
+          <div onClick="{{ openTonight }}" style="background:var(--sage-soft);border-radius:16px;padding:18px;cursor:pointer">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+              <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--marigold-ink)">Tonight</span>
+              <span style="color:var(--marigold-ink);font-size:15px">&rsaquo;</span>
+            </div>
+            <div style="font-family:var(--font-display);font-style:italic;font-size:23px;color:var(--ink);line-height:1.25">{{ homeTonight }}</div>
+          </div>
+          <div style="display:flex;gap:10px">
+            <div onClick="{{ goGroceries }}" style="flex:1;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px">
+              <div style="flex-shrink:0;width:36px;height:36px;border-radius:9px;background:var(--rust-soft);display:flex;align-items:center;justify-content:center">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2 3h2l2.4 12.4a2 2 0 0 0 2 1.6h9.2a2 2 0 0 0 2-1.6L22 6H6"></path></svg>
+              </div>
+              <div>
+                <div style="font-size:20px;font-weight:600;color:var(--ink);line-height:1.15">{{ homeToBuyCount }}</div>
+                <div style="font-size:11px;color:var(--ink-soft);margin-top:2px">{{ homeToBuyLabel }}</div>
+              </div>
+            </div>
+            <div onClick="{{ goPrep }}" style="flex:1;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px">
+              <div style="flex-shrink:0;width:36px;height:36px;border-radius:9px;background:var(--slate-soft);display:flex;align-items:center;justify-content:center">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--slate)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+              </div>
+              <div>
+                <div style="font-size:20px;font-weight:600;color:var(--ink);line-height:1.15">{{ homePrepCount }}</div>
+                <div style="font-size:11px;color:var(--ink-soft);margin-top:2px;white-space:nowrap">{{ homePrepLabel }}</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:2px">Browse</div>
+            <div style="display:flex;flex-direction:column">
+              <div onClick="{{ goPlan }}" style="display:flex;align-items:center;justify-content:space-between;padding:13px 2px;border-bottom:1px dashed var(--line);cursor:pointer">
+                <span style="font-size:14px;color:var(--ink)">This week's menu</span>
+                <span style="color:var(--ink-faint)">&rsaquo;</span>
+              </div>
+              <div onClick="{{ goLibrary }}" style="display:flex;align-items:center;justify-content:space-between;padding:13px 2px;border-bottom:1px dashed var(--line);cursor:pointer">
+                <span style="font-size:14px;color:var(--ink)">Recipe library</span>
+                <span style="color:var(--ink-faint)">&rsaquo;</span>
+              </div>
+              <div onClick="{{ goDiscover }}" style="display:flex;align-items:center;justify-content:space-between;padding:13px 2px;border-bottom:1px dashed var(--line);cursor:pointer">
+                <span style="font-size:14px;color:var(--ink)">Discover more</span>
+                <span style="color:var(--ink-faint)">&rsaquo;</span>
+              </div>
+              <div onClick="{{ openFamily }}" style="display:flex;align-items:center;justify-content:space-between;padding:13px 2px;cursor:pointer">
+                <span style="font-size:14px;color:var(--ink)">Eating preferences</span>
+                <span style="color:var(--ink-faint)">&rsaquo;</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isPlan }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:16px 18px 90px;display:flex;flex-direction:column;gap:14px">
+          <div onClick="{{ goHome }}" style="cursor:pointer;font-size:13px;color:var(--ink-soft)">&larr; Home</div>
+          <sc-for list="{{ planItems }}" as="it" hint-placeholder-count="6">
+            <sc-if value="{{ it.isHeader }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">
+                <div style="font-family:var(--font-ui);font-size:11px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--ink-soft)">{{ it.label }}</div>
+                <sc-if value="{{ it.isGuestHeader }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;align-items:center;gap:5px">
+                    <span style="font-size:10.5px;color:var(--ink-faint)">Guests</span>
+                    <input value="{{ it.guestCount }}" onChange="{{ it.setGuestCount }}" style="width:32px;font-family:var(--font-ui);font-size:12px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:3px 4px;text-align:center;outline:none" />
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+            <sc-if value="{{ it.isMeal }}" hint-placeholder-val="{{ false }}">
+              <div style="background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px 15px;box-shadow:0 1px 2px rgba(122,83,48,0.06)">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px">
+                  <div style="font-family:var(--font-ui);font-size:12.5px;font-weight:700;color:var(--ink)">{{ it.day }}</div>
+                  <div style="display:flex;gap:6px">
+                    <sc-if value="{{ it.leftover }}" hint-placeholder-val="{{ false }}">
+                      <span style="display:inline-flex;align-items:center;background:var(--slate-soft);color:var(--slate);font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:5px">Leftovers</span>
+                    </sc-if>
+                    <span style="display:inline-flex;align-items:center;background:{{ it.kosherBg }};color:{{ it.kosherFg }};font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:5px">{{ it.kosherLabel }}</span>
+                  </div>
+                </div>
+
+                <sc-if value="{{ it.isWeekdayMeal }}" hint-placeholder-val="{{ false }}">
+                  <sc-if value="{{ it.isSkipped }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--line);border-radius:8px;padding:9px 11px">
+                      <span style="font-size:13.5px;color:var(--ink)">{{ it.skipLabel }}</span>
+                      <span onClick="{{ it.clearSkip }}" style="font-size:11.5px;font-weight:700;color:var(--ink-soft);cursor:pointer;flex-shrink:0">Undo</span>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ it.notSkipped }}" hint-placeholder-val="{{ true }}">
+                    <div onPointerDown="{{ it.onSwipeStart }}" onPointerUp="{{ it.onSwipeEnd }}" onTouchStart="{{ it.onSwipeStart }}" onTouchEnd="{{ it.onSwipeEnd }}" style="touch-action:pan-y">
+                    <div onClick="{{ it.openDetail }}" style="font-size:14.5px;color:var(--ink-soft);line-height:1.45;margin-bottom:8px;cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-decoration-thickness:1px">{{ it.family }}</div>
+                    <sc-if value="{{ it.hasBoth }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;gap:8px;align-items:flex-start;background:var(--marigold-soft);border-radius:8px;padding:8px 10px">
+                        <span style="font-size:10.5px;font-weight:700;color:var(--marigold-ink);flex-shrink:0;letter-spacing:0.02em">KIDS GET</span>
+                        <span style="font-size:12.5px;color:var(--ink-soft);line-height:1.4">{{ it.kids }}</span>
+                      </div>
+                    </sc-if>
+
+                    <sc-if value="{{ it.baseLabel }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top:9px;display:flex;gap:7px;align-items:flex-start">
+                        <span style="display:inline-flex;align-items:center;flex-shrink:0;background:var(--line);color:var(--ink-soft);font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px">♻ SUNDAY PREP</span>
+                        <span style="font-size:12px;color:var(--ink-soft);line-height:1.4">{{ it.baseLabel }}</span>
+                      </div>
+                    </sc-if>
+
+                    <sc-if value="{{ it.stealth }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top:9px;display:flex;gap:7px;align-items:flex-start">
+                        <span style="font-size:10px;font-weight:700;color:var(--ink)">✦ STEALTH VEG</span>
+                        <span style="font-size:12px;color:var(--ink-soft);line-height:1.4">{{ it.stealth }}</span>
+                      </div>
+                    </sc-if>
+
+                    <div style="font-size:10.5px;color:var(--ink-faint);margin-top:11px">&larr; Swipe to skip this night</div>
+                    </div>
+                  </sc-if>
+                </sc-if>
+
+                <sc-if value="{{ it.courses }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:9px">
+                    <sc-for list="{{ it.courses }}" as="c" hint-placeholder-count="7">
+                      <div>
+                        <div style="font-size:9.5px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:2px">{{ c.course }}</div>
+                        <input value="{{ c.family }}" onChange="{{ c.setFamily }}" style="width:100%;box-sizing:border-box;font-family:var(--font-ui);font-size:13.5px;color:var(--ink);line-height:1.4;background:transparent;border:none;border-bottom:1px dashed var(--line);padding:2px 0 4px;outline:none" />
+                        <sc-if value="{{ c.hasKid }}" hint-placeholder-val="{{ false }}">
+                          <div style="display:flex;gap:7px;align-items:flex-start;background:var(--marigold-soft);border-radius:7px;padding:5px 9px;margin-top:4px">
+                            <span style="font-size:10px;font-weight:700;color:var(--marigold-ink);flex-shrink:0">KIDS</span>
+                            <span style="font-size:12px;color:var(--ink-soft);line-height:1.4">{{ c.kids }}</span>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ c.stealth }}" hint-placeholder-val="{{ false }}">
+                          <div style="margin-top:4px;display:flex;gap:6px;align-items:flex-start">
+                            <span style="font-size:9.5px;font-weight:700;color:var(--ink)">✦ STEALTH</span>
+                            <span style="font-size:11.5px;color:var(--ink-soft);line-height:1.4">{{ c.stealth }}</span>
+                          </div>
+                        </sc-if>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ it.isAi }}" hint-placeholder-val="{{ false }}">
+              <div style="background:var(--marigold-soft);border:1px solid var(--line);border-radius:14px;padding:15px">
+                <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px">
+                  <span style="font-size:12px;font-weight:700;color:var(--marigold)">✦ AI PICK</span>
+                  <span style="font-size:11.5px;color:var(--ink-soft)">from your Sunday bases</span>
+                </div>
+                <div style="font-family:var(--font-display);font-style:italic;font-size:19px;color:var(--ink);margin-bottom:4px">{{ aiCard.title }}</div>
+                <div style="font-size:12px;color:var(--ink-soft);margin-bottom:6px">Uses: {{ aiCard.baseLine }}</div>
+                <div style="font-size:12.5px;color:var(--ink-soft);line-height:1.4;margin-bottom:13px">{{ aiCard.note }}</div>
+                <div style="display:flex;gap:8px">
+                  <div onClick="{{ aiCard.nextSuggestion }}" style="flex:1;text-align:center;padding:9px 0;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;background:var(--paper);color:var(--ink-soft);border:1px solid var(--line)">Suggest another</div>
+                  <div onClick="{{ aiCard.toggleAdd }}" style="flex:1;text-align:center;padding:9px 0;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;background:{{ aiCard.addBg }};color:var(--paper)">{{ aiCard.addLabel }}</div>
+                </div>
+              </div>
+            </sc-if>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isGroceries }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:16px 18px 90px">
+          <div onClick="{{ goHome }}" style="cursor:pointer;font-size:13px;color:var(--ink-soft);margin-bottom:14px">&larr; Home</div>
+          <div style="display:flex;gap:6px;margin-bottom:12px">
+            <div onClick="{{ setViewWeekday }}" style="flex:1;text-align:center;padding:9px 0;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;background:{{ weekdayTabBg }};color:{{ weekdayTabFg }}">Weekday</div>
+            <div onClick="{{ setViewShabbat }}" style="flex:1;text-align:center;padding:9px 0;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;background:{{ shabbatTabBg }};color:{{ shabbatTabFg }}">Shabbat &amp; guests</div>
+          </div>
+          <div style="font-size:12px;color:var(--ink-soft);margin-bottom:12px">{{ groceryToBuyLabel }} · tap what you already have</div>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <sc-for list="{{ groceryGroups }}" as="grp" hint-placeholder-count="3">
+              <div>
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px">{{ grp.aisle }}</div>
+                <div style="display:flex;flex-direction:column;gap:2px">
+                  <sc-for list="{{ grp.items }}" as="gi" hint-placeholder-count="3">
+                    <div onClick="{{ gi.toggle }}" style="display:flex;align-items:center;gap:10px;padding:9px 4px;cursor:pointer;border-bottom:1px dashed var(--line)">
+                      <div style="width:20px;height:20px;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:{{ gi.boxBg }};border:1.5px solid {{ gi.boxBorder }}">
+                        <sc-if value="{{ gi.have }}" hint-placeholder-val="{{ false }}">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--cream)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </sc-if>
+                      </div>
+                      <div style="font-size:13.5px;color:{{ gi.textColor }};text-decoration:{{ gi.strike }}">{{ gi.name }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isPrep }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:16px 18px 90px">
+          <div onClick="{{ goHome }}" style="cursor:pointer;font-size:13px;color:var(--ink-soft);margin-bottom:14px">&larr; Home</div>
+          <div style="display:flex;gap:6px;margin-bottom:8px">
+            <div onClick="{{ setPrepSunday }}" style="flex:1;text-align:center;padding:9px 0;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;background:{{ sunPrepTabBg }};color:{{ sunPrepTabFg }}">Sunday · the week</div>
+            <div onClick="{{ setPrepShabbat }}" style="flex:1;text-align:center;padding:9px 0;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;background:{{ shabPrepTabBg }};color:{{ shabPrepTabFg }}">Thu/Fri · Shabbat</div>
+          </div>
+          <div style="font-size:11.5px;color:var(--marigold-ink);font-weight:700;margin-bottom:14px">{{ prepTimingLabel }}</div>
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <sc-for list="{{ prepGroups }}" as="pg" hint-placeholder-count="4">
+              <div>
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px">{{ pg.section }}</div>
+                <div style="display:flex;flex-direction:column;gap:2px">
+                  <sc-for list="{{ pg.items }}" as="pi" hint-placeholder-count="2">
+                    <div onClick="{{ pi.toggle }}" style="display:flex;align-items:center;gap:10px;padding:9px 4px;cursor:pointer;border-bottom:1px dashed var(--line)">
+                      <div style="width:20px;height:20px;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:{{ pi.boxBg }};border:1.5px solid {{ pi.boxBorder }}">
+                        <sc-if value="{{ pi.done }}" hint-placeholder-val="{{ false }}">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--cream)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </sc-if>
+                      </div>
+                      <div style="flex:1;font-size:13.5px;color:{{ pi.textColor }};text-decoration:{{ pi.strike }}">{{ pi.label }}</div>
+                      <div style="font-size:11px;color:var(--ink-faint)">{{ pi.time }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isDiscover }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:16px 18px 90px;display:flex;flex-direction:column;gap:12px">
+          <div onClick="{{ goHome }}" style="cursor:pointer;font-size:13px;color:var(--ink-soft)">&larr; Home</div>
+          <sc-for list="{{ discoverList }}" as="rc" hint-placeholder-count="3">
+            <div style="background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
+                <div style="font-size:12px;color:var(--ink-soft)">{{ rc.creator }}</div>
+                <span style="display:inline-flex;align-items:center;flex-shrink:0;background:{{ rc.matchBg }};color:{{ rc.matchFg }};font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:5px">{{ rc.matchPct }}% FITS</span>
+              </div>
+              <div style="font-family:var(--font-display);font-style:italic;font-size:19px;color:var(--ink);margin-bottom:4px">{{ rc.title }}</div>
+              <div style="font-size:12.5px;color:var(--ink-soft);line-height:1.4;margin-bottom:11px">{{ rc.note }}</div>
+              <div onClick="{{ rc.toggleSave }}" style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:{{ rc.saveColor }};cursor:pointer">{{ rc.saveLabel }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isLibrary }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:16px 18px 90px">
+          <sc-if value="{{ isLibraryDetail }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ closeLibraryDetail }}" style="cursor:pointer;font-size:13px;color:var(--ink-soft);margin-bottom:14px">&larr; Back to library</div>
+            <div style="display:flex;gap:6px;margin-bottom:8px">
+              <span style="display:inline-flex;align-items:center;background:{{ libraryDetail.kosherBg }};color:{{ libraryDetail.kosherFg }};font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:5px">{{ libraryDetail.kosherLabel }}</span>
+              <span style="display:inline-flex;align-items:center;background:var(--line);color:var(--ink-soft);font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:5px">{{ libraryDetail.audienceLabel }}</span>
+            </div>
+            <div style="font-family:var(--font-display);font-style:italic;font-size:24px;color:var(--ink);line-height:1.2">{{ libraryDetail.title }}</div>
+          </sc-if>
+
+          <sc-if value="{{ isLibraryList }}" hint-placeholder-val="{{ true }}">
+            <div onClick="{{ goHome }}" style="cursor:pointer;font-size:13px;color:var(--ink-soft);margin-bottom:14px">&larr; Home</div>
+            <div style="display:flex;gap:8px;margin-bottom:14px">
+              <input value="{{ librarySearch }}" onChange="{{ setLibrarySearch }}" placeholder="Search your recipes" style="flex:1;font-family:var(--font-ui);font-size:13.5px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 12px;outline:none" />
+              <div onClick="{{ openAddRecipe }}" style="flex-shrink:0;display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:8px;background:var(--marigold);color:var(--paper);font-size:19px;font-weight:600;cursor:pointer">+</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <sc-for list="{{ filteredLibrary }}" as="r" hint-placeholder-count="5">
+                <div onClick="{{ r.openDetail }}" style="display:flex;flex-direction:column;gap:5px;padding:12px 4px;border-bottom:1px dashed var(--line);cursor:pointer">
+                  <div style="font-size:14px;color:var(--ink);line-height:1.4">{{ r.title }}</div>
+                  <div style="display:flex;gap:6px">
+                    <span style="display:inline-flex;align-items:center;background:{{ r.kosherBg }};color:{{ r.kosherFg }};font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px">{{ r.kosherLabel }}</span>
+                    <span style="display:inline-flex;align-items:center;background:var(--line);color:var(--ink-soft);font-size:10px;font-weight:600;padding:2px 8px;border-radius:5px">{{ r.audienceLabel }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isLibraryAdd }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+              <div onClick="{{ closeAddRecipe }}" style="cursor:pointer;font-size:13px;color:var(--ink-soft)">&larr; Back</div>
+              <div style="font-family:var(--font-display);font-style:italic;font-size:18px;color:var(--ink)">Add a recipe</div>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
+              <div onClick="{{ setMethodManual }}" style="text-align:center;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;background:{{ manualBg }};color:{{ manualFg }}">Add manually</div>
+              <div onClick="{{ setMethodLink }}" style="text-align:center;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;background:{{ linkBg }};color:{{ linkFg }}">Paste a link</div>
+              <div onClick="{{ setMethodPhoto }}" style="text-align:center;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;background:{{ photoBg }};color:{{ photoFg }}">Add a photo</div>
+              <div onClick="{{ setMethodEmail }}" style="text-align:center;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;background:{{ emailBg }};color:{{ emailFg }}">Forward an email</div>
+              <div onClick="{{ setMethodDiscover }}" style="text-align:center;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;background:{{ discoverBg }};color:{{ discoverFg }}">Discover something new</div>
+            </div>
+
+            <sc-if value="{{ isMethodManual }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <input value="{{ newTitle }}" onChange="{{ setNewTitle }}" placeholder="Recipe title" style="font-family:var(--font-ui);font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 12px;outline:none" />
+                <textarea value="{{ newBody }}" onChange="{{ setNewBody }}" rows="6" placeholder="Type or paste ingredients and steps" style="font-family:var(--font-ui);font-size:13.5px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 12px;outline:none;resize:vertical"></textarea>
+                <div onClick="{{ submitManual }}" style="text-align:center;padding:10px 0;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;background:var(--marigold);color:var(--paper)">Save recipe</div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ isMethodLink }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:12px;color:var(--ink-soft);line-height:1.5;margin-bottom:10px">Paste a link, or paste the full recipe text copied from Claude, Gemini, or an Instagram caption — we’ll figure out which and pull out the details. On Instagram, hitting Share → Copy Link works too.</div>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <textarea value="{{ linkUrl }}" onChange="{{ setLinkUrl }}" rows="4" placeholder="Paste a link or a full recipe" style="font-family:var(--font-ui);font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 12px;outline:none;resize:vertical"></textarea>
+                <div onClick="{{ submitLink }}" style="text-align:center;padding:10px 0;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;background:var(--marigold);color:var(--paper)">Save to library</div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ isMethodPhoto }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:12px;color:var(--ink-soft);line-height:1.5;margin-bottom:10px">Take or choose a photo or screenshot of a recipe — we’ll scan it and pull out the title, ingredients and steps.</div>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div style="width:100%;height:130px"><image-slot id="add-recipe-photo-{{ pendingId }}" shape="rounded" radius="10" placeholder="Tap to add a photo"></image-slot></div>
+                <sc-if value="{{ isOcrIdle }}" hint-placeholder-val="{{ true }}">
+                  <div onClick="{{ scanPhoto }}" style="text-align:center;padding:10px 0;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;background:var(--syrup);color:#FFFDF7">Add photo</div>
+                </sc-if>
+                <sc-if value="{{ isOcrScanned }}" hint-placeholder-val="{{ false }}">
+                  <div style="background:var(--sage-soft);border-radius:8px;padding:9px 11px;font-size:11.5px;color:var(--marigold-ink);font-weight:600">✓ Title, ingredients & 6 steps extracted — review below</div>
+                  <input value="{{ ocrTitle }}" onChange="{{ setOcrTitle }}" style="font-family:var(--font-ui);font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 12px;outline:none" />
+                  <div onClick="{{ submitPhoto }}" style="text-align:center;padding:10px 0;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;background:var(--marigold);color:var(--paper)">Save to library</div>
+                </sc-if>
+              </div>
+            </sc-if>
+            <sc-if value="{{ isMethodEmail }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:12px;color:var(--ink-soft);line-height:1.5;margin-bottom:12px">Forward anything here — an Instagram post shared to your email, a screenshot, or a recipe emailed from a Claude/Gemini chat — and we'll read it and drop it into your library.</div>
+              <div style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center;font-family:var(--font-ui);font-size:15px;font-weight:600;color:var(--ink);letter-spacing:0.01em">recipes-jane@rung.app</div>
+            </sc-if>
+            <sc-if value="{{ isMethodDiscover }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <sc-if value="{{ discoverToAddEmpty }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:12.5px;color:var(--ink-soft);line-height:1.5">Nothing saved from Discover yet. Go to the Discover tab, tap "Save to library" on a recipe, then come back here to add it.</div>
+                </sc-if>
+                <sc-for list="{{ discoverToAdd }}" as="d" hint-placeholder-count="2">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 4px;border-bottom:1px dashed var(--line)">
+                    <div>
+                      <div style="font-size:13.5px;color:var(--ink)">{{ d.title }}</div>
+                      <div style="font-size:11px;color:var(--ink-soft)">{{ d.creator }}</div>
+                    </div>
+                    <div onClick="{{ d.addToLibrary }}" style="flex-shrink:0;font-size:12px;font-weight:700;color:var(--ink);cursor:pointer">+ Add</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </sc-if>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:16px 18px 90px">
+          <div onClick="{{ closeDetail }}" style="cursor:pointer;font-size:13px;color:var(--ink-soft);margin-bottom:16px">&larr; Back to plan</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-size:12px;font-weight:700;color:var(--ink-soft)">{{ detail.day }}</span>
+            <span style="display:inline-flex;align-items:center;background:{{ detail.kosherBg }};color:{{ detail.kosherFg }};font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:5px">{{ detail.kosherLabel }}</span>
+          </div>
+          <div style="font-family:var(--font-display);font-style:italic;font-size:24px;color:var(--ink);line-height:1.2;margin-bottom:16px">{{ detail.family }}</div>
+
+          <sc-if value="{{ detail.hasBoth }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-bottom:14px">
+              <div style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--marigold-ink);margin-bottom:5px">Kids get</div>
+              <div style="font-size:14px;color:var(--ink-soft);line-height:1.5">{{ detail.kids }}</div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ detail.baseLabel }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-bottom:14px">
+              <div style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:5px">♻ Sunday prep</div>
+              <div style="font-size:14px;color:var(--ink-soft);line-height:1.5">{{ detail.baseLabel }}</div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ detail.stealth }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-bottom:14px">
+              <div style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink);margin-bottom:5px">✦ Stealth veg</div>
+              <div style="font-size:14px;color:var(--ink-soft);line-height:1.5">{{ detail.stealth }}</div>
+            </div>
+          </sc-if>
+
+          <div style="margin-top:20px;padding:13px;background:var(--paper);border:1px solid var(--line);border-radius:12px">
+            <div style="font-size:12.5px;color:var(--ink-soft);line-height:1.5;margin-bottom:10px">Full ingredients and steps for this recipe live in your Library.</div>
+            <div onClick="{{ openLibraryFromDetail }}" style="text-align:center;padding:9px 0;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;background:var(--syrup);color:#FFFDF7">Open in Library</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isFamily }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:16px 18px 90px">
+          <div onClick="{{ closeFamily }}" style="cursor:pointer;font-size:13px;color:var(--ink-soft);margin-bottom:14px">&larr; Home</div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <sc-for list="{{ familyList }}" as="fam" hint-placeholder-count="4">
+              <div style="background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:13px">
+                <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">
+                  <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:{{ fam.tintBg }};color:{{ fam.tintFg }};display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700">{{ fam.initial }}</div>
+                  <span style="font-size:14.5px;font-weight:600;color:var(--ink)">{{ fam.name }}</span>
+                  <span style="font-size:11px;color:var(--ink-faint)">{{ fam.age }}</span>
+                </div>
+                <textarea value="{{ fam.note }}" onChange="{{ fam.setNote }}" rows="3" placeholder="Likes, dislikes, allergies…" style="width:100%;box-sizing:border-box;font-family:var(--font-ui);font-size:13px;color:var(--ink-soft);line-height:1.45;background:var(--linen);border:1px solid var(--line);border-radius:8px;padding:9px 10px;resize:vertical;outline:none"></textarea>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="display:flex;border-top:1.5px dashed var(--line);background:var(--cream);padding:8px 4px 22px;position:sticky;bottom:0">
+      <div onClick="{{ goHome }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:{{ homeColor }}">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"></path><path d="M5 10v10h14V10"></path></svg>
+        <span style="font-size:9.5px;font-weight:600">Home</span>
+      </div>
+      <div onClick="{{ goPlan }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:{{ planColor }}">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="16" y1="2" x2="16" y2="6"></line></svg>
+        <span style="font-size:9.5px;font-weight:600">Plan</span>
+      </div>
+      <div onClick="{{ goGroceries }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:{{ groceriesColor }}">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2 3h2l2.4 12.4a2 2 0 0 0 2 1.6h9.2a2 2 0 0 0 2-1.6L22 6H6"></path></svg>
+        <span style="font-size:9.5px;font-weight:600">Groceries</span>
+      </div>
+      <div onClick="{{ goPrep }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:{{ prepColor }}">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+        <span style="font-size:9.5px;font-weight:600">Prep</span>
+      </div>
+      <div onClick="{{ goDiscover }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:{{ discoverColor }}">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path></svg>
+        <span style="font-size:9.5px;font-weight:600">Discover</span>
+      </div>
+      <div onClick="{{ goLibrary }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:{{ libraryColor }}">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        <span style="font-size:9.5px;font-weight:600">Library</span>
+      </div>
+    </div>
+    </sc-if>
+  </div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:402,&quot;height&quot;:874}}">
+const BASES = { b1:'Roasted chicken (Sunday batch)', b2:'Big-batch rice', b3:'Roasted root veg', b4:'Tahini-yogurt sauce' };
+const WEEKDAY_MEALS = [
+  { id:'sun', day:'Sun', kosher:'parve', family:'Pan-seared salmon, roasted broccoli & rice', kids:'Salmon nuggets, rice, cucumber sticks', stealth:'Cauliflower blended into the rice', usesBase:'b3' },
+  { id:'mon', day:'Mon', kosher:'meat', family:'Chicken shawarma bowls, tahini, pickles', kids:'Plain shawarma chicken, pita, cucumber', stealth:null, usesBase:'b4' },
+  { id:'tue', day:'Tue', kosher:'meat', family:'Leftovers: Friday roast chicken & rice', kids:'Leftovers: Friday roast chicken & rice', stealth:null, leftover:true, usesBase:'b1' },
+  { id:'wed', day:'Wed', kosher:'parve', family:'Tofu veggie stir-fry, soy-ginger sauce', kids:'Same veg, noodles instead of rice, sauce on the side', stealth:'Shredded zucchini folded into the noodles', usesBase:'b2' },
+  { id:'thu', day:'Thu', kosher:'dairy', family:'Pasta, butternut alfredo, parmesan', kids:'"Mac and cheese" \u2014 same hidden-squash sauce', stealth:'Butternut squash blended into the sauce', usesBase:null },
+];
+const SHABBAT_MEALS = [
+  { id:'fri', dayLabel:'Fri night', hasGuests:true, kosher:'meat', courses:[
+    { course:'Wine & grape juice', family:'Kiddush wine', kids:'Grape juice, same toast' },
+    { course:'Challah & dips', family:'Fresh challah, hummus, matbucha, techina', kids:null },
+    { course:'Mains', family:'Herb-roasted chicken, crispy skin', kids:'Same chicken, deboned and cut small' },
+    { course:'Starch sides', family:'Roasted potatoes & rice', kids:null },
+    { course:'Veg sides', family:'Roasted carrots & sweet potatoes in the pan gravy', kids:null, stealth:'Carrot & sweet potato pur\u00e9ed right into the gravy' },
+    { course:'Salads', family:'Israeli salad, cabbage slaw', kids:null },
+    { course:'Dessert', family:'Chocolate babka bites', kids:null },
+  ] },
+  { id:'sat', dayLabel:'Sat lunch', hasGuests:false, kosher:'meat', courses:[
+    { course:'Wine & grape juice', family:'Kiddush wine', kids:'Grape juice' },
+    { course:'Challah & dips', family:'Leftover challah, hummus', kids:null },
+    { course:'Mains', family:'Cholent with flanken', kids:'Cholent potatoes & meat only, no beans' },
+    { course:'Starch sides', family:'Potato kugel', kids:null },
+    { course:'Veg sides', family:'Roasted cauliflower', kids:null },
+    { course:'Salads', family:'Israeli salads, pickles', kids:null },
+    { course:'Dessert', family:'Fruit platter', kids:null },
+  ] },
+];
+const KOSHER_STYLE = {
+  meat: { bg:'var(--rust-soft)', fg:'var(--rust)', label:'Meat' },
+  dairy: { bg:'var(--sky-soft)', fg:'var(--sky)', label:'Dairy' },
+  parve: { bg:'var(--sage-soft)', fg:'var(--sage)', label:'Parve' },
+};
+const WEEKDAY_GROCERY = [
+  { aisle:'Produce', items:[{id:'g1',name:'Broccoli'},{id:'g2',name:'Cauliflower'},{id:'g3',name:'Cucumbers'},{id:'g4',name:'Zucchini'},{id:'g5',name:'Butternut squash'}] },
+  { aisle:'Meat & fish', items:[{id:'g6',name:'Salmon fillets'},{id:'g7',name:'Chicken thighs (shawarma cut)'}] },
+  { aisle:'Dairy', items:[{id:'g8',name:'Parmesan'}] },
+  { aisle:'Pantry', items:[{id:'g9',name:'Rice'},{id:'g10',name:'Egg noodles'},{id:'g11',name:'Tahini'},{id:'g12',name:'Pasta'},{id:'g13',name:'Firm tofu'}] },
+];
+const SHABBAT_GROCERY = [
+  { aisle:'Produce', items:[{id:'s1',name:'Carrots'},{id:'s2',name:'Sweet potatoes'},{id:'s3',name:'Potatoes'},{id:'s4',name:'Tomatoes & cucumbers (salads)'}] },
+  { aisle:'Meat & fish', items:[{id:'s5',name:'Whole chicken x2'},{id:'s6',name:'Cholent meat (flanken)'}] },
+  { aisle:'Pantry', items:[{id:'s7',name:'Challah'},{id:'s8',name:'Cholent beans & barley'},{id:'s9',name:'Kugel noodles'}] },
+];
+const SUNDAY_PREP_GROUPS = [
+  { section:'Chop & prep', items:[{id:'p1',label:'Dice 2 onions',time:'5 min'},{id:'p2',label:'Peel & cube butternut squash',time:'8 min'},{id:'p3',label:'Shred zucchini & carrots',time:'6 min'},{id:'p4',label:'Wash & cut cucumbers for the week',time:'5 min'}] },
+  { section:'Marinate', items:[{id:'p5',label:'Shawarma spice rub on chicken (Mon)',time:'5 min'}] },
+  { section:'Cook now, use later', items:[{id:'p7',label:'Roast squash for Thu\u2019s sauce',time:'25 min'},{id:'p8',label:'Cook a double batch of rice, freeze half',time:'20 min'},{id:'p12',label:'Roast a tray of root veg \u2014 base for the week',time:'30 min'},{id:'p13',label:'Whisk tahini-yogurt sauce',time:'5 min'}] },
+  { section:'Freeze & portion', items:[{id:'p10',label:'Shape & freeze kids\u2019 salmon nuggets',time:'10 min'},{id:'p14',label:'Portion stir-fry veg into containers',time:'5 min'}] },
+];
+const SHABBAT_PREP_GROUPS = [
+  { section:'Thursday \u00b7 get ahead', items:[{id:'q1',label:'Start the cholent base',time:'15 min'},{id:'q2',label:'Herb rub on the Friday chicken',time:'8 min'},{id:'q3',label:'Peel potatoes & sweet potatoes',time:'10 min'},{id:'q4',label:'Make matbucha & salads, chill overnight',time:'25 min'}] },
+  { section:'Friday \u00b7 cook & finish', items:[{id:'q5',label:'Roast the chicken',time:'70 min'},{id:'q6',label:'Roast the root vegetables',time:'40 min'},{id:'q7',label:'Cook rice for the table',time:'20 min'},{id:'q8',label:'Warm challah, plate dips',time:'10 min'},{id:'q9',label:'Set out kiddush wine & grape juice',time:'2 min'}] },
+];
+const AI_SUGGESTIONS = [
+  { title:'Chicken & rice stuffed peppers', base:'Roasted chicken + big-batch rice', note:'A different way to use Tuesday\u2019s leftovers' },
+  { title:'Tahini-roasted veg grain bowl', base:'Roasted root veg + tahini sauce', note:'Parve, kid-friendly deconstructed on the side' },
+  { title:'Squash & chickpea flatbread', base:'Roasted butternut squash', note:'Stealth veg built right in' },
+];
+const FAMILY_SEED = [
+  { id:'f1', name:'You & David', age:'Adults', note:'No real restrictions \u2014 happy to eat what the kids won\u2019t.' },
+  { id:'f2', name:'Noa', age:'5 years', note:'Dislikes: mushrooms, big chunks of onion. Loves: pasta, anything with sauce. Texture-sensitive \u2014 purees hide well.' },
+  { id:'f3', name:'Eli', age:'3 years', note:'Very picky \u2014 plain proteins only, no sauce touching other food. Will try one new bite if it looks like something he already likes.' },
+  { id:'f4', name:'The baby', age:'5 months', note:'Starting solids. Introduced so far: banana, avocado, sweet potato. Not yet tried: egg, dairy, peanut.' },
+];
+const LIBRARY_SEED = [
+  { id:'l1', title:'Pan-seared salmon', kosher:'parve', both:true },
+  { id:'l2', title:'Roasted broccoli', kosher:'parve', both:false },
+  { id:'l3', title:'Chicken shawarma', kosher:'meat', both:true },
+  { id:'l4', title:'Quick tahini sauce', kosher:'parve', both:false },
+  { id:'l5', title:'Tofu veggie stir-fry', kosher:'parve', both:true },
+  { id:'l6', title:'Butternut alfredo pasta', kosher:'dairy', both:true },
+  { id:'l7', title:'Herb-roasted chicken', kosher:'meat', both:true },
+  { id:'l8', title:'Classic challah', kosher:'parve', both:false },
+  { id:'l9', title:'Roasted root vegetables', kosher:'parve', both:false },
+  { id:'l10', title:'Cholent with flanken', kosher:'meat', both:true },
+  { id:'l11', title:'Potato kugel', kosher:'meat', both:false },
+];
+const DISCOVER = [
+  { id:'d1', creator:'@kitchen.by.leah', title:'Sheet-pan harissa salmon', matchPct:92, note:'Uses the salmon + broccoli you already buy' },
+  { id:'d2', creator:'@noshwithdana', title:'Butternut mac, one pot', matchPct:88, note:'Same hidden-squash trick as your Thursday pasta' },
+  { id:'d3', creator:'@simplyshabbat', title:'Slow-cooker cholent, 15-min prep', matchPct:81, note:'Swaps in your usual cholent meat cut' },
+];
+
+class Component extends DCLogic {
+  state = { tab:'home', have:{}, prepDone:{}, saved:{}, groceryView:'weekday', prepView:'sunday', aiIndex:0, aiAdded:false,
+    library:[...LIBRARY_SEED], librarySearch:'', libraryView:'list', addMethod:'manual', newTitle:'', newBody:'', linkUrl:'', addedFromDiscover:{}, skip:{},
+    familyNotes: Object.fromEntries(FAMILY_SEED.map(f => [f.id, f.note])), detailId:null, libraryDetailId:null, pendingId:'u0', ocrState:'idle', ocrTitle:'',
+    authStage:'welcome', signupName:'', signupEmail:'', signupPassword:'', kosherOn:true,
+    familyMembers: FAMILY_SEED.map(f => ({ id:f.id, name:f.name, age:f.age })),
+    setupRecipes:[], setupRecipeTitle:'', firstHomeSeen:false, guestCount:4, shabbatEdits:{} };
+
+  pillStyle(active) {
+    return active ? { bg:'var(--ink)', fg:'var(--cream)' } : { bg:'var(--paper)', fg:'var(--ink-soft)' };
+  }
+
+  buildMeal(m, skipMap) {
+    const k = KOSHER_STYLE[m.kosher];
+    const skipLabel = skipMap[m.id] || null;
+    return {
+      isMeal:true, isHeader:false, id:m.id, day:m.day, family:m.family, kids:m.kids, stealth:m.stealth,
+      leftover:!!m.leftover, isWeekdayMeal:true, courses:null, hasBoth: !m.leftover && m.family !== m.kids,
+      baseLabel: m.usesBase ? BASES[m.usesBase] : null,
+      kosherLabel:k.label, kosherBg:k.bg, kosherFg:k.fg,
+      isSkipped: !!skipLabel, notSkipped: !skipLabel, skipLabel,
+      onSwipeStart: (e) => { this._swipeStartX = e.touches ? e.touches[0].clientX : e.clientX; },
+      onSwipeEnd: (e) => {
+        if (this._swipeStartX == null) return;
+        const endX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+        const dx = endX - this._swipeStartX;
+        this._swipeStartX = null;
+        if (dx < -60) this.setState(st => ({ skip:{ ...st.skip, [m.id]:'Skipping this night' } }));
+      },
+      clearSkip: () => this.setState(st => { const sk = { ...st.skip }; delete sk[m.id]; return { skip: sk }; }),
+      openDetail: () => this.setState({ tab:'detail', detailId: m.id }),
+    };
+  }
+
+  buildDetail(id, skipMap) {
+    const m = WEEKDAY_MEALS.find(x => x.id === id);
+    if (!m) return null;
+    const k = KOSHER_STYLE[m.kosher];
+    return {
+      day:m.day, family:m.family, kids:m.kids, stealth:m.stealth, leftover:!!m.leftover,
+      hasBoth: !m.leftover && m.family !== m.kids, baseLabel: m.usesBase ? BASES[m.usesBase] : null,
+      kosherLabel:k.label, kosherBg:k.bg, kosherFg:k.fg, isSkipped: !!skipMap[m.id],
+    };
+  }
+
+  buildCourse(c, mealId, idx, edits) {
+    const key = mealId + '-' + idx;
+    const family = edits[key] != null ? edits[key] : c.family;
+    return {
+      course:c.course, family, kids:c.kids, stealth:c.stealth||null, hasKid: c.kids != null,
+      setFamily: e => this.setState(st => ({ shabbatEdits: { ...st.shabbatEdits, [key]: e.target.value } })),
+    };
+  }
+
+  buildShabbatMeal(m, guestCount, edits) {
+    const k = KOSHER_STYLE[m.kosher];
+    const day = m.hasGuests ? `${m.dayLabel} \u00b7 ${guestCount} guests` : m.dayLabel;
+    return {
+      isMeal:true, isHeader:false, id:m.id, day, leftover:false, isWeekdayMeal:false,
+      courses: m.courses.map((c,idx) => this.buildCourse(c, m.id, idx, edits)),
+      kosherLabel:k.label, kosherBg:k.bg, kosherFg:k.fg,
+    };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const planItems = [
+      { isHeader:true, isMeal:false, label:'Weekday \u00b7 Sun\u2013Thu' },
+      ...WEEKDAY_MEALS.map(m => this.buildMeal(m, s.skip)),
+      { isAi:true, isHeader:false, isMeal:false },
+      { isHeader:true, isMeal:false, label:`Shabbat \u00b7 hosting ${s.guestCount}`, isGuestHeader:true, guestCount:s.guestCount, setGuestCount: e => this.setState({ guestCount: e.target.value }) },
+      ...SHABBAT_MEALS.map(m => this.buildShabbatMeal(m, s.guestCount, s.shabbatEdits)),
+    ];
+
+    const groceryGroups = (s.groceryView === 'weekday' ? WEEKDAY_GROCERY : SHABBAT_GROCERY).map(grp => ({
+      aisle: grp.aisle,
+      items: grp.items.map(it => {
+        const have = !!s.have[it.id];
+        return {
+          id: it.id, name: it.name, have,
+          boxBg: have ? 'var(--ink)' : 'var(--paper)',
+          boxBorder: have ? 'var(--ink)' : 'var(--ink-faint)',
+          textColor: have ? 'var(--ink-faint)' : 'var(--ink)',
+          strike: have ? 'line-through' : 'none',
+          toggle: () => this.setState(st => ({ have: { ...st.have, [it.id]: !st.have[it.id] } })),
+        };
+      }),
+    }));
+    const allGroceryIds = (s.groceryView === 'weekday' ? WEEKDAY_GROCERY : SHABBAT_GROCERY).flatMap(g => g.items.map(i => i.id));
+    const toBuy = allGroceryIds.filter(id => !s.have[id]).length;
+
+    const prepGroups = (s.prepView === 'sunday' ? SUNDAY_PREP_GROUPS : SHABBAT_PREP_GROUPS).map(pg => ({
+      section: pg.section,
+      items: pg.items.map(it => {
+        const done = !!s.prepDone[it.id];
+        return {
+          id: it.id, label: it.label, time: it.time, done,
+          boxBg: done ? 'var(--ink)' : 'var(--paper)',
+          boxBorder: done ? 'var(--ink)' : 'var(--ink-faint)',
+          textColor: done ? 'var(--ink-faint)' : 'var(--ink)',
+          strike: done ? 'line-through' : 'none',
+          toggle: () => this.setState(st => ({ prepDone: { ...st.prepDone, [it.id]: !st.prepDone[it.id] } })),
+        };
+      }),
+    }));
+
+    const discoverList = DISCOVER.map(rc => {
+      const saved = !!s.saved[rc.id];
+      const tier = rc.matchPct >= 90 ? 'hi' : rc.matchPct >= 85 ? 'mid' : 'low';
+      const tierStyle = { hi:['var(--success-soft)','var(--success)'], mid:['var(--sky-soft)','var(--sky)'], low:['var(--line)','var(--ink-soft)'] }[tier];
+      return {
+        ...rc,
+        matchBg: tierStyle[0],
+        matchFg: tierStyle[1],
+        saveLabel: saved ? '\u2713 Saved to library' : '+ Save to library',
+        saveColor: saved ? 'var(--success)' : 'var(--ink)',
+        toggleSave: () => this.setState(st => ({ saved: { ...st.saved, [rc.id]: !st.saved[rc.id] } })),
+      };
+    });
+
+    const ai = AI_SUGGESTIONS[s.aiIndex];
+    const aiCard = {
+      title: ai.title, baseLine: ai.base, note: ai.note, added: s.aiAdded,
+      addLabel: s.aiAdded ? '\u2713 Added' : '+ Add to plan',
+      addBg: s.aiAdded ? 'var(--ink-soft)' : 'var(--syrup)',
+      nextSuggestion: () => this.setState(st => ({ aiIndex: (st.aiIndex + 1) % AI_SUGGESTIONS.length, aiAdded:false })),
+      toggleAdd: () => this.setState(st => ({ aiAdded: !st.aiAdded })),
+    };
+
+    const wkP = this.pillStyle(s.groceryView === 'weekday');
+    const shP = this.pillStyle(s.groceryView === 'shabbat');
+    const sunPrepP = this.pillStyle(s.prepView === 'sunday');
+    const shabPrepP = this.pillStyle(s.prepView === 'shabbat');
+
+    const firstName = s.signupName.trim().split(' ')[0] || 'Your';
+    const appName = `${firstName}${firstName==='Your' ? '' : '\u2019s'} Pantry`;
+    const titles = { home:[`Good evening, ${firstName === 'Your' ? 'there' : firstName}`,''], plan:['Your Pantry, this week',''], groceries:['Groceries',''], prep:['Sunday prep',''], discover:['Discover',''], library:['Library',''], family:['Family & preferences',''] };
+    const [headerTitle] = titles[s.tab] || titles.home;
+    const headerSubtitle = s.tab === 'plan' ? '' : appName;
+    const PERSON_TINTS = [
+      ['#FFFDF7','#F2EADB'],
+      ['#FFFDF7','#F0E7D4'],
+    ];
+    const familyList = s.familyMembers.map((f, i) => ({ id:f.id, name: f.name || 'Unnamed', age:f.age, initial: (f.name || '?').trim().charAt(0).toUpperCase() || '?', tintBg: PERSON_TINTS[i % PERSON_TINTS.length][0], tintFg: PERSON_TINTS[i % PERSON_TINTS.length][1], note: s.familyNotes[f.id] || '', setNote: e => this.setState(st => ({ familyNotes: { ...st.familyNotes, [f.id]: e.target.value } })) }));
+    const householdMembers = s.familyMembers.map(f => ({
+      id:f.id, name:f.name, age:f.age,
+      setName: e => this.setState(st => ({ familyMembers: st.familyMembers.map(x => x.id===f.id ? { ...x, name:e.target.value } : x) })),
+      setAge: e => this.setState(st => ({ familyMembers: st.familyMembers.map(x => x.id===f.id ? { ...x, age:e.target.value } : x) })),
+      remove: () => this.setState(st => ({ familyMembers: st.familyMembers.filter(x => x.id!==f.id) })),
+    }));
+
+    const q = s.librarySearch.trim().toLowerCase();
+    const filteredLibrary = s.library.filter(r => !q || r.title.toLowerCase().includes(q)).map(r => {
+      const k = KOSHER_STYLE[r.kosher];
+      return {
+        id:r.id, title:r.title, kosherLabel:k.label, kosherBg:k.bg, kosherFg:k.fg, audienceLabel: r.both ? 'Family + kids' : 'Everyone',
+        openDetail: () => this.setState({ libraryView:'detail', libraryDetailId:r.id }),
+      };
+    });
+    const methodP = m => (s.addMethod === m ? { bg:'var(--ink)', fg:'var(--paper)' } : { bg:'var(--paper)', fg:'var(--ink-soft)' });
+    const manualM = methodP('manual'), linkM = methodP('link'), discoverM = methodP('discover');
+    const discoverToAdd = DISCOVER.filter(d => s.saved[d.id] && !s.addedFromDiscover[d.id]);
+    const discoverToAddEmpty = discoverToAdd.length === 0;
+    const libraryDetail = (() => {
+      const r = s.library.find(x => x.id === s.libraryDetailId);
+      if (!r) return null;
+      const k = KOSHER_STYLE[r.kosher];
+      return { id:r.id, title:r.title, kosherLabel:k.label, kosherBg:k.bg, kosherFg:k.fg, audienceLabel: r.both ? 'Family + kids' : 'Everyone' };
+    })();
+
+    return {
+      headerTitle, headerSubtitle, appName, firstName,
+      avatarLetter: firstName === 'Your' ? 'N' : firstName[0].toUpperCase(),
+      isHome: s.tab==='home', goHome: () => this.setState({ tab:'home' }), homeColor: s.tab==='home' ? 'var(--ink)' : 'var(--ink-faint)',
+      isFirstHome: s.tab==='home' && !s.firstHomeSeen,
+      isReturningHome: s.tab==='home' && s.firstHomeSeen,
+      buildFirstWeek: () => this.setState({ tab:'plan', firstHomeSeen:true }),
+      firstNameSuffix: s.signupName.trim() ? `, ${s.signupName.trim().split(' ')[0]}` : '',
+      firstHomeSummary: `Your library has ${s.library.length} recipe${s.library.length===1?'':'s'} and ${s.familyMembers.length} eater${s.familyMembers.length===1?'':'s'} with preferences saved. Ready to put together your first week?`,
+      homeToBuyCount: toBuy,
+      homeToBuyLabel: `Item${toBuy===1?'':'s'} to buy \u2192`,
+      homePrepCount: (() => { const total = SUNDAY_PREP_GROUPS.flatMap(g=>g.items).length; const done = SUNDAY_PREP_GROUPS.flatMap(g=>g.items).filter(i=>s.prepDone[i.id]).length; return total-done; })(),
+      homePrepLabel: 'Sunday prep tasks \u2192',
+      homeTonight: (() => { const next = WEEKDAY_MEALS.find(m => !s.skip[m.id]); return next ? next.family : 'All set \u2014 nothing planned yet'; })(),
+      openTonight: () => { const next = WEEKDAY_MEALS.find(m => !s.skip[m.id]); if (next) this.setState({ tab:'detail', detailId: next.id }); },
+      isPlan: s.tab==='plan', isGroceries: s.tab==='groceries', isPrep: s.tab==='prep', isDiscover: s.tab==='discover', isLibrary: s.tab==='library',
+      isLibraryList: s.libraryView==='list', isLibraryAdd: s.libraryView==='add', isLibraryDetail: s.libraryView==='detail',
+      libraryDetail, pendingId: s.pendingId,
+      closeLibraryDetail: () => this.setState({ libraryView:'list' }),
+      isMethodManual: s.addMethod==='manual', isMethodLink: s.addMethod==='link', isMethodDiscover: s.addMethod==='discover',
+      manualBg:manualM.bg, manualFg:manualM.fg, linkBg:linkM.bg, linkFg:linkM.fg, discoverBg:discoverM.bg, discoverFg:discoverM.fg,
+      filteredLibrary, librarySearch: s.librarySearch,
+      setLibrarySearch: e => this.setState({ librarySearch: e.target.value }),
+      openAddRecipe: () => this.setState({ libraryView:'add', addMethod:'manual', newTitle:'', newBody:'', linkUrl:'', pendingId:'u'+Date.now(), ocrState:'idle', ocrTitle:'' }),
+      closeAddRecipe: () => this.setState({ libraryView:'list' }),
+      setMethodManual: () => this.setState({ addMethod:'manual' }),
+      setMethodLink: () => this.setState({ addMethod:'link' }),
+      setMethodPhoto: () => this.setState({ addMethod:'photo', ocrState:'idle', ocrTitle:'' }),
+      setMethodEmail: () => this.setState({ addMethod:'email' }),
+      setMethodDiscover: () => this.setState({ addMethod:'discover' }),
+      isMethodPhoto: s.addMethod==='photo', isMethodEmail: s.addMethod==='email',
+      photoBg: (s.addMethod==='photo' ? { bg:'var(--ink)', fg:'var(--paper)' } : { bg:'var(--paper)', fg:'var(--ink-soft)' }).bg,
+      photoFg: (s.addMethod==='photo' ? { bg:'var(--ink)', fg:'var(--paper)' } : { bg:'var(--paper)', fg:'var(--ink-soft)' }).fg,
+      emailBg: (s.addMethod==='email' ? { bg:'var(--ink)', fg:'var(--paper)' } : { bg:'var(--paper)', fg:'var(--ink-soft)' }).bg,
+      emailFg: (s.addMethod==='email' ? { bg:'var(--ink)', fg:'var(--paper)' } : { bg:'var(--paper)', fg:'var(--ink-soft)' }).fg,
+      isOcrIdle: s.ocrState==='idle', isOcrScanned: s.ocrState==='scanned',
+      scanPhoto: () => this.setState({ ocrState:'scanned', ocrTitle:'Sheet-pan salmon, lemon-dill yogurt' }),
+      ocrTitle: s.ocrTitle, setOcrTitle: e => this.setState({ ocrTitle: e.target.value }),
+      submitPhoto: () => { if (!s.ocrTitle.trim()) return; this.setState(st => ({ library:[...st.library, { id:st.pendingId, title:st.ocrTitle.trim(), kosher:'parve', both:true }], libraryView:'list' })); },
+      newTitle: s.newTitle, setNewTitle: e => this.setState({ newTitle: e.target.value }),
+      newBody: s.newBody, setNewBody: e => this.setState({ newBody: e.target.value }),
+      linkUrl: s.linkUrl, setLinkUrl: e => this.setState({ linkUrl: e.target.value }),
+      submitManual: () => { if (!s.newTitle.trim()) return; this.setState(st => ({ library:[...st.library, { id:st.pendingId, title:st.newTitle.trim(), kosher:'parve', both:true }], libraryView:'list', newTitle:'' })); },
+      submitLink: () => { if (!s.linkUrl.trim()) return; this.setState(st => ({ library:[...st.library, { id:st.pendingId, title:'Recipe from link \u2014 tap to fill in details', kosher:'parve', both:true }], libraryView:'list', linkUrl:'' })); },
+      discoverToAddEmpty,
+      discoverToAdd: discoverToAdd.map(d => ({
+        id:d.id, title:d.title, creator:d.creator,
+        addToLibrary: () => this.setState(st => ({
+          library:[...st.library, { id:'u'+Date.now(), title:d.title, kosher:'parve', both:true }],
+          addedFromDiscover: { ...st.addedFromDiscover, [d.id]:true },
+        })),
+      })),
+      planItems, groceryGroups, prepGroups, discoverList, aiCard, familyList,
+      isFamily: s.tab==='family',
+      openFamily: () => this.setState({ tab:'family' }),
+      closeFamily: () => this.setState({ tab:'home' }),
+      isWelcome: s.authStage==='welcome', isSignup: s.authStage==='signup', isHousehold: s.authStage==='household', isSetup: s.authStage==='setup', isRecipes: s.authStage==='recipes', isApp: s.authStage==='app',
+      goSignup: () => this.setState({ authStage:'signup' }),
+      goHousehold: () => this.setState({ authStage:'household' }),
+      goSetup: () => this.setState({ authStage:'setup' }),
+      goRecipes: () => this.setState({ authStage:'recipes' }),
+      goEnterApp: () => this.setState({ authStage:'app' }),
+      setupRecipes: s.setupRecipes, setupRecipeTitle: s.setupRecipeTitle,
+      setSetupRecipeTitle: e => this.setState({ setupRecipeTitle: e.target.value }),
+      addSetupRecipe: () => {
+        if (!s.setupRecipeTitle.trim()) return;
+        const title = s.setupRecipeTitle.trim();
+        this.setState(st => ({
+          setupRecipes:[...st.setupRecipes, { title }],
+          library:[...st.library, { id:'u'+Date.now(), title, kosher:'parve', both:true }],
+          setupRecipeTitle:'',
+        }));
+      },
+      signupName: s.signupName, setSignupName: e => this.setState({ signupName: e.target.value }),
+      signupEmail: s.signupEmail, setSignupEmail: e => this.setState({ signupEmail: e.target.value }),
+      signupPassword: s.signupPassword, setSignupPassword: e => this.setState({ signupPassword: e.target.value }),
+      householdMembers, addHouseholdMember: () => this.setState(st => ({ familyMembers:[...st.familyMembers, { id:'m'+Date.now(), name:'', age:'' }] })),
+      kosherOn: s.kosherOn, toggleKosher: () => this.setState(st => ({ kosherOn: !st.kosherOn })),
+      kosherToggleBg: s.kosherOn ? 'var(--ink)' : 'var(--line)',
+      kosherToggleLeft: s.kosherOn ? '20px' : '2px',
+      isDetail: s.tab==='detail',
+      detail: this.buildDetail(s.detailId, s.skip),
+      closeDetail: () => this.setState({ tab:'plan' }),
+      openLibraryFromDetail: () => this.setState({ tab:'library' }),
+      groceryToBuyLabel: `${toBuy} item${toBuy===1?'':'s'} to buy`,
+      setViewWeekday: () => this.setState({ groceryView:'weekday' }),
+      setViewShabbat: () => this.setState({ groceryView:'shabbat' }),
+      weekdayTabBg: wkP.bg, weekdayTabFg: wkP.fg,
+      shabbatTabBg: shP.bg, shabbatTabFg: shP.fg,
+      groceryTimingLabel: s.groceryView === 'weekday' ? 'Buy Sunday, before you prep' : 'Buy Thursday or Friday morning',
+      setPrepSunday: () => this.setState({ prepView:'sunday' }),
+      setPrepShabbat: () => this.setState({ prepView:'shabbat' }),
+      sunPrepTabBg: sunPrepP.bg, sunPrepTabFg: sunPrepP.fg,
+      shabPrepTabBg: shabPrepP.bg, shabPrepTabFg: shabPrepP.fg,
+      prepTimingLabel: s.prepView === 'sunday' ? 'For your Sun\u2013Thu weekday meals' : 'For Shabbat + guests \u2014 not on Sunday',
+      goPlan: () => this.setState({ tab:'plan' }),
+      goGroceries: () => this.setState({ tab:'groceries' }),
+      goPrep: () => this.setState({ tab:'prep' }),
+      goDiscover: () => this.setState({ tab:'discover' }),
+      goLibrary: () => this.setState({ tab:'library' }),
+      planColor: s.tab==='plan' ? 'var(--ink)' : 'var(--ink-faint)',
+      groceriesColor: s.tab==='groceries' ? 'var(--ink)' : 'var(--ink-faint)',
+      prepColor: s.tab==='prep' ? 'var(--ink)' : 'var(--ink-faint)',
+      discoverColor: s.tab==='discover' ? 'var(--ink)' : 'var(--ink-faint)',
+      libraryColor: s.tab==='library' ? 'var(--ink)' : 'var(--ink-faint)',
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+import React from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import Svg, { Circle, Path } from 'react-native-svg';
+import { colors, fonts, radii, spacing } from '../../constants/theme';
+import { Header } from '../../components/Header';
+import { ChevronRight, PrimaryButton, Screen, SecondaryButton, SectionLabel } from '../../components/ui';
+import { useAuth } from '../../contexts/AuthContext';
+import { useRecipes } from '../../hooks/useRecipes';
+import { useHouseholdMembers } from '../../hooks/useHousehold';
+import { useWeekdayMeals } from '../../hooks/usePlan';
+import { useGroceryItems } from '../../hooks/useGroceries';
+import { useAllSundayPrepItems } from '../../hooks/usePrep';
+
+export default function Home() {
+  const router = useRouter();
+  const { profile, updateProfile } = useAuth();
+  const { data: recipes } = useRecipes();
+  const { data: members } = useHouseholdMembers();
+  const { data: weekdayMeals } = useWeekdayMeals();
+  const { data: weekdayGroceries } = useGroceryItems('weekday');
+  const { data: sundayPrep } = useAllSundayPrepItems();
+
+  const firstName = profile?.name.trim().split(' ')[0] || 'Your';
+  const isFirstHome = !profile?.first_home_seen;
+
+  if (isFirstHome) {
+    const recipeCount = recipes?.length ?? 0;
+    const memberCount = members?.length ?? 0;
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.cream }}>
+        <Header title={`Good evening, ${firstName === 'Your' ? 'there' : firstName}`} />
+        <Screen>
+          <Text style={styles.firstTitle}>
+            You&apos;re all set up{profile?.name.trim() ? `, ${firstName}` : ''}
+          </Text>
+          <Text style={styles.firstSummary}>
+            Your library has {recipeCount} recipe{recipeCount === 1 ? '' : 's'} and {memberCount} eater
+            {memberCount === 1 ? '' : 's'} with preferences saved. Ready to put together your first week?
+          </Text>
+          <PrimaryButton
+            label="Build my first week"
+            onPress={async () => {
+              await updateProfile({ first_home_seen: true });
+              router.push('/(tabs)/plan');
+            }}
+            style={{ marginTop: 8 }}
+          />
+          <SecondaryButton label="Add more recipes first" onPress={() => router.push('/(tabs)/library')} />
+        </Screen>
+      </View>
+    );
+  }
+
+  const nextMeal = (weekdayMeals ?? []).find((m) => !m.is_skipped);
+  const toBuy = (weekdayGroceries ?? []).filter((g) => !g.have).length;
+  const prepDone = (sundayPrep ?? []).filter((p) => p.done).length;
+  const prepTotal = (sundayPrep ?? []).length;
+  const prepRemaining = prepTotal - prepDone;
+
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.cream }}>
+      <Header title={`Good evening, ${firstName === 'Your' ? 'there' : firstName}`} />
+      <Screen>
+        <Pressable
+          onPress={() => nextMeal && router.push(`/meal/${nextMeal.id}`)}
+          style={styles.tonightCard}
+        >
+          <View style={styles.tonightHeader}>
+            <Text style={styles.tonightLabel}>Tonight</Text>
+            <Text style={styles.tonightChevron}>{'›'}</Text>
+          </View>
+          <Text style={styles.tonightMeal}>{nextMeal ? nextMeal.family_desc : 'All set — nothing planned yet'}</Text>
+        </Pressable>
+
+        <View style={styles.statRow}>
+          <Pressable onPress={() => router.push('/(tabs)/groceries')} style={styles.statCard}>
+            <View style={[styles.statIcon, { backgroundColor: colors.rustSoft }]}>
+              <Svg width={17} height={17} viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth={1.75}>
+                <Circle cx={9} cy={21} r={1} />
+                <Circle cx={19} cy={21} r={1} />
+                <Path
+                  d="M2 3h2l2.4 12.4a2 2 0 0 0 2 1.6h9.2a2 2 0 0 0 2-1.6L22 6H6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </Svg>
+            </View>
+            <View>
+              <Text style={styles.statNumber}>{toBuy}</Text>
+              <Text style={styles.statLabel}>Item{toBuy === 1 ? '' : 's'} to buy {'→'}</Text>
+            </View>
+          </Pressable>
+          <Pressable onPress={() => router.push('/(tabs)/prep')} style={styles.statCard}>
+            <View style={[styles.statIcon, { backgroundColor: colors.slateSoft }]}>
+              <Svg width={17} height={17} viewBox="0 0 24 24" fill="none" stroke={colors.slate} strokeWidth={1.75}>
+                <Path d="M9 11l3 3L22 4" strokeLinecap="round" strokeLinejoin="round" />
+                <Path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" strokeLinecap="round" strokeLinejoin="round" />
+              </Svg>
+            </View>
+            <View>
+              <Text style={styles.statNumber}>{prepRemaining}</Text>
+              <Text style={styles.statLabel} numberOfLines={1}>Sunday prep tasks {'→'}</Text>
+            </View>
+          </Pressable>
+        </View>
+
+        <View>
+          <SectionLabel style={{ marginBottom: 2 }}>Browse</SectionLabel>
+          <View>
+            <BrowseRow label="This week's menu" onPress={() => router.push('/(tabs)/plan')} />
+            <BrowseRow label="Recipe library" onPress={() => router.push('/(tabs)/library')} />
+            <BrowseRow label="Discover more" onPress={() => router.push('/(tabs)/discover')} />
+            <BrowseRow label="Eating preferences" onPress={() => router.push('/family')} last />
+          </View>
+        </View>
+      </Screen>
+    </View>
+  );
+}
+
+function BrowseRow({ label, onPress, last }: { label: string; onPress: () => void; last?: boolean }) {
+  return (
+    <Pressable onPress={onPress} style={[styles.browseRow, last && { borderBottomWidth: 0 }]}>
+      <Text style={styles.browseLabel}>{label}</Text>
+      <ChevronRight />
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  firstTitle: { fontFamily: fonts.display, fontStyle: 'italic', fontSize: 23, color: colors.ink, lineHeight: 29, marginBottom: 16 },
+  firstSummary: { fontSize: 13, color: colors.inkSoft, lineHeight: 20, marginBottom: 16, fontFamily: fonts.ui },
+  tonightCard: { backgroundColor: colors.sageSoft, borderRadius: radii.xxl, padding: 18, marginBottom: spacing.xxl },
+  tonightHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 },
+  tonightLabel: { fontSize: 10.5, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', color: colors.marigoldInk, fontFamily: fonts.uiBold },
+  tonightChevron: { color: colors.marigoldInk, fontSize: 15 },
+  tonightMeal: { fontFamily: fonts.display, fontStyle: 'italic', fontSize: 23, color: colors.ink, lineHeight: 29 },
+  statRow: { flexDirection: 'row', gap: 10, marginBottom: spacing.xxl },
+  statCard: {
+    flex: 1,
+    backgroundColor: colors.paper,
+    borderWidth: 1,
+    borderColor: colors.line,
+    borderRadius: radii.lg,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  statIcon: { width: 36, height: 36, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
+  statNumber: { fontSize: 20, fontWeight: '600', color: colors.ink, lineHeight: 23, fontFamily: fonts.uiSemiBold },
+  statLabel: { fontSize: 11, color: colors.inkSoft, marginTop: 2, fontFamily: fonts.ui },
+  browseRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 13,
+    paddingHorizontal: 2,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
+    borderStyle: 'dashed',
+  },
+  browseLabel: { fontSize: 14, color: colors.ink, fontFamily: fonts.ui },
+});
