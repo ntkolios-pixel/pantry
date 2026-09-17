@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { colors, fonts, radii, spacing } from '../../constants/theme';
-import { PrimaryButton, SecondaryButton, StepLabel, TextLink } from '../../components/ui';
+import { colors, fonts, radii } from '../../constants/theme';
+import { PrimaryButton, StepLabel, TextLink } from '../../components/ui';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function Signup() {
   const router = useRouter();
   const { mode: initialMode } = useLocalSearchParams<{ mode?: string }>();
-  const { signUpWithEmail, signInWithEmail, signInWithGoogle, signInWithApple } = useAuth();
+  const { signUpWithEmail, signInWithEmail } = useAuth();
 
   const [mode, setMode] = useState<'signup' | 'login'>(initialMode === 'login' ? 'login' : 'signup');
   const [name, setName] = useState('');
@@ -17,7 +17,6 @@ export default function Signup() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [oauthLoading, setOauthLoading] = useState<'google' | 'apple' | null>(null);
 
   const isSignup = mode === 'signup';
 
@@ -48,18 +47,6 @@ export default function Signup() {
       setError(e instanceof Error ? e.message : 'Something went wrong.');
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function withOauth(provider: 'google' | 'apple', fn: () => Promise<void>) {
-    setError(null);
-    setOauthLoading(provider);
-    try {
-      await fn();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Something went wrong.');
-    } finally {
-      setOauthLoading(null);
     }
   }
 
@@ -109,22 +96,6 @@ export default function Signup() {
         <Text style={styles.terms}>By continuing you agree to keep it kosher — and to our Terms.</Text>
       ) : null}
 
-      <View style={styles.divider}>
-        <View style={styles.dividerLine} />
-        <Text style={styles.dividerText}>or</Text>
-        <View style={styles.dividerLine} />
-      </View>
-
-      <SecondaryButton
-        label={oauthLoading === 'google' ? 'Connecting…' : 'Continue with Google'}
-        onPress={() => withOauth('google', signInWithGoogle)}
-      />
-      <SecondaryButton
-        label={oauthLoading === 'apple' ? 'Connecting…' : 'Continue with Apple'}
-        onPress={() => withOauth('apple', signInWithApple)}
-        style={{ marginTop: 8 }}
-      />
-
       <TextLink
         label={isSignup ? 'I already have an account' : "I don't have an account yet"}
         onPress={() => {
@@ -154,7 +125,4 @@ const styles = StyleSheet.create({
   error: { color: colors.rust, fontSize: 12.5, fontFamily: fonts.ui },
   info: { color: colors.sage, fontSize: 12.5, fontFamily: fonts.ui },
   terms: { textAlign: 'center', fontSize: 11.5, color: colors.inkFaint, marginTop: 4, fontFamily: fonts.ui },
-  divider: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: spacing.sm },
-  dividerLine: { flex: 1, height: 1, backgroundColor: colors.line },
-  dividerText: { fontSize: 11.5, color: colors.inkFaint, fontFamily: fonts.ui },
 });
