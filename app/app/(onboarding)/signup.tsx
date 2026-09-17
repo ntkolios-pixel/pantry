@@ -21,17 +21,20 @@ export default function Signup() {
   const isSignup = mode === 'signup';
 
   async function submit() {
-    Alert.alert('Button tapped', 'The Log in button was pressed.');
+    Alert.alert('Checkpoint 1', 'submit() started');
     setError(null);
     setInfo(null);
     if (!email.trim() || !password) {
+      Alert.alert('Checkpoint 2a', 'Missing email or password');
       setError('Email and password are required.');
       return;
     }
     if (isSignup && !name.trim()) {
+      Alert.alert('Checkpoint 2b', 'Missing name');
       setError('Tell us your name.');
       return;
     }
+    Alert.alert('Checkpoint 3', 'Validation passed, about to call the server');
     setLoading(true);
     try {
       if (isSignup) {
@@ -43,8 +46,10 @@ export default function Signup() {
         // else: session is set, root redirect gate takes it from here
       } else {
         await signInWithEmail(email.trim(), password);
+        Alert.alert('Checkpoint 4', 'signInWithEmail returned successfully');
       }
     } catch (e) {
+      Alert.alert('Checkpoint 5 (caught error)', e instanceof Error ? e.message : String(e));
       setError(e instanceof Error ? e.message : 'Something went wrong.');
     } finally {
       setLoading(false);
