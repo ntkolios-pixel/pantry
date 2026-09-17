@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Svg, { Circle, Path } from 'react-native-svg';
@@ -11,6 +11,7 @@ import { useHouseholdMembers } from '../../hooks/useHousehold';
 import { useWeekdayMeals } from '../../hooks/usePlan';
 import { useGroceryItems } from '../../hooks/useGroceries';
 import { useAllSundayPrepItems } from '../../hooks/usePrep';
+import { useGenerateWeeklyPlan } from '../../hooks/useGeneratePlan';
 
 export default function Home() {
   const router = useRouter();
@@ -20,9 +21,22 @@ export default function Home() {
   const { data: weekdayMeals } = useWeekdayMeals();
   const { data: weekdayGroceries } = useGroceryItems('weekday');
   const { data: sundayPrep } = useAllSundayPrepItems();
+  const generatePlan = useGenerateWeeklyPlan();
+  const [buildError, setBuildError] = useState<string | null>(null);
 
   const firstName = profile?.name.trim().split(' ')[0] || 'Your';
   const isFirstHome = !profile?.first_home_seen;
+
+  async function buildFirstWeek() {
+    setBuildError(null);
+    try {
+      await generatePlan.mutateAsync();
+      await updateProfile({ first_home_seen: true });
+      router.push('/(tabs)/plan');
+    } catch (e) {
+      setBuildError(e instanceof Error ? e.message : 'Something went wrong building your week.');
+    }
+  }
 
   if (isFirstHome) {
     const recipeCount = recipes?.length ?? 0;
@@ -38,12 +52,14 @@ export default function Home() {
             Your library has {recipeCount} recipe{recipeCount === 1 ? '' : 's'} and {memberCount} eater
             {memberCount === 1 ? '' : 's'} with preferences saved. Ready to put together your first week?
           </Text>
+          {buildError ? <Text style={styles.buildError}>{buildError}</Text> : null}
+          {generatePlan.isPending ? (
+            <Text style={styles.buildHint}>Building your week — this can take a moment…</Text>
+          ) : null}
           <PrimaryButton
             label="Build my first week"
-            onPress={async () => {
-              await updateProfile({ first_home_seen: true });
-              router.push('/(tabs)/plan');
-            }}
+            onPress={buildFirstWeek}
+            loading={generatePlan.isPending}
             style={{ marginTop: 8 }}
           />
           <SecondaryButton label="Add more recipes first" onPress={() => router.push('/(tabs)/library')} />
@@ -131,6 +147,8 @@ function BrowseRow({ label, onPress, last }: { label: string; onPress: () => voi
 const styles = StyleSheet.create({
   firstTitle: { fontFamily: fonts.display, fontStyle: 'italic', fontSize: 23, color: colors.ink, lineHeight: 29, marginBottom: 16 },
   firstSummary: { fontSize: 13, color: colors.inkSoft, lineHeight: 20, marginBottom: 16, fontFamily: fonts.ui },
+  buildError: { color: colors.rust, fontSize: 12.5, marginBottom: 10, fontFamily: fonts.ui },
+  buildHint: { color: colors.inkSoft, fontSize: 12, lineHeight: 17, marginBottom: 10, fontFamily: fonts.ui },
   tonightCard: { backgroundColor: colors.sageSoft, borderRadius: radii.xxl, padding: 18, marginBottom: spacing.xxl },
   tonightHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 },
   tonightLabel: { fontSize: 10.5, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', color: colors.marigoldInk, fontFamily: fonts.uiBold },

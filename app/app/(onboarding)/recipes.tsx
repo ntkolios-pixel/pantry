@@ -5,16 +5,16 @@ import { colors, fonts, radii, spacing } from '../../constants/theme';
 import { PrimaryButton, Screen, StepLabel } from '../../components/ui';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAddRecipe, useRecipes } from '../../hooks/useRecipes';
-import { supabase } from '../../lib/supabase';
+import { useGenerateWeeklyPlan } from '../../hooks/useGeneratePlan';
 
 export default function Recipes() {
   const router = useRouter();
-  const { updateProfile, refreshProfile } = useAuth();
+  const { updateProfile } = useAuth();
   const { data: recipes } = useRecipes();
   const addRecipe = useAddRecipe();
+  const generatePlan = useGenerateWeeklyPlan();
 
   const [title, setTitle] = useState('');
-  const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function submit() {
@@ -25,18 +25,13 @@ export default function Recipes() {
   }
 
   async function start() {
-    setStarting(true);
     setError(null);
     try {
-      const { error: seedError } = await supabase.rpc('seed_starter_data');
-      if (seedError) throw seedError;
+      await generatePlan.mutateAsync();
       await updateProfile({ onboarding_stage: 'app' });
-      await refreshProfile();
       router.replace('/(tabs)/home');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Something went wrong starting your plan.');
-    } finally {
-      setStarting(false);
+      setError(e instanceof Error ? e.message : 'Something went wrong building your week.');
     }
   }
 
@@ -75,8 +70,11 @@ export default function Recipes() {
       </View>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
+      {generatePlan.isPending ? (
+        <Text style={styles.hint}>Building your week — reading your recipes and preferences, this can take a moment…</Text>
+      ) : null}
 
-      <PrimaryButton label="Start planning" onPress={start} loading={starting} style={{ marginTop: 6 }} />
+      <PrimaryButton label="Start planning" onPress={start} loading={generatePlan.isPending} style={{ marginTop: 6 }} />
     </Screen>
   );
 }
@@ -121,4 +119,5 @@ const styles = StyleSheet.create({
   },
   addButtonText: { color: colors.paper, fontSize: 19, fontWeight: '600' },
   error: { color: colors.rust, fontSize: 12.5, fontFamily: fonts.ui },
+  hint: { color: colors.inkSoft, fontSize: 12, lineHeight: 17, fontFamily: fonts.ui },
 });
