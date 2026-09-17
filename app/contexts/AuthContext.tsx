@@ -102,7 +102,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signInWithEmail = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const TIMED_OUT = Symbol('timed-out');
+    const result = await withTimeout(supabase.auth.signInWithPassword({ email, password }), 12000, TIMED_OUT as any);
+    if (result === (TIMED_OUT as any)) {
+      throw new Error(
+        'Log in is taking too long to reach the server. Check your internet connection and try again.'
+      );
+    }
+    const { error } = result as Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>;
     if (error) throw error;
   }, []);
 
