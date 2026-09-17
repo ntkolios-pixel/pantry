@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { colors, fonts, radii } from '../../constants/theme';
 import { PrimaryButton, StepLabel, TextLink } from '../../components/ui';
@@ -21,6 +21,7 @@ export default function Signup() {
   const isSignup = mode === 'signup';
 
   async function submit() {
+    Alert.alert('Button tapped', 'The Log in button was pressed.');
     setError(null);
     setInfo(null);
     if (!email.trim() || !password) {
