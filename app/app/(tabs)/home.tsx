@@ -12,6 +12,7 @@ import { useWeekdayMeals } from '../../hooks/usePlan';
 import { useGroceryItems } from '../../hooks/useGroceries';
 import { useAllSundayPrepItems } from '../../hooks/usePrep';
 import { useGenerateWeeklyPlan } from '../../hooks/useGeneratePlan';
+import { formatWeekOf, getCurrentWeekStart } from '../../lib/dates';
 
 export default function Home() {
   const router = useRouter();
@@ -23,9 +24,12 @@ export default function Home() {
   const { data: sundayPrep } = useAllSundayPrepItems();
   const generatePlan = useGenerateWeeklyPlan();
   const [buildError, setBuildError] = useState<string | null>(null);
+  const [newWeekDismissed, setNewWeekDismissed] = useState(false);
 
   const firstName = profile?.name.trim().split(' ')[0] || 'Your';
   const isFirstHome = !profile?.first_home_seen;
+  const currentWeekStart = getCurrentWeekStart();
+  const isNewWeek = !isFirstHome && profile?.current_week_start !== currentWeekStart;
 
   async function buildFirstWeek() {
     setBuildError(null);
@@ -33,6 +37,15 @@ export default function Home() {
       await generatePlan.mutateAsync();
       await updateProfile({ first_home_seen: true });
       router.push('/(tabs)/plan');
+    } catch (e) {
+      setBuildError(e instanceof Error ? e.message : 'Something went wrong building your week.');
+    }
+  }
+
+  async function buildNewWeek() {
+    setBuildError(null);
+    try {
+      await generatePlan.mutateAsync();
     } catch (e) {
       setBuildError(e instanceof Error ? e.message : 'Something went wrong building your week.');
     }
@@ -78,6 +91,30 @@ export default function Home() {
     <View style={{ flex: 1, backgroundColor: colors.cream }}>
       <Header title={`Good evening, ${firstName === 'Your' ? 'there' : firstName}`} />
       <Screen>
+        {isNewWeek && !newWeekDismissed ? (
+          <View style={styles.newWeekCard}>
+            <Text style={styles.newWeekTitle}>It's a new week</Text>
+            <Text style={styles.newWeekBody}>
+              Ready to build your plan for the {formatWeekOf(currentWeekStart)}?
+            </Text>
+            {buildError ? <Text style={styles.buildError}>{buildError}</Text> : null}
+            {generatePlan.isPending ? (
+              <Text style={styles.buildHint}>Building your week — this can take a moment…</Text>
+            ) : null}
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+              <Pressable onPress={() => setNewWeekDismissed(true)} style={styles.newWeekDismiss} hitSlop={8}>
+                <Text style={styles.newWeekDismissText}>Not now</Text>
+              </Pressable>
+              <PrimaryButton
+                label="Build this week's plan"
+                onPress={buildNewWeek}
+                loading={generatePlan.isPending}
+                style={{ flex: 1 }}
+              />
+            </View>
+          </View>
+        ) : null}
+
         <Pressable
           onPress={() => nextMeal && router.push(`/meal/${nextMeal.id}`)}
           style={styles.tonightCard}
@@ -149,6 +186,16 @@ const styles = StyleSheet.create({
   firstSummary: { fontSize: 13, color: colors.inkSoft, lineHeight: 20, marginBottom: 16, fontFamily: fonts.ui },
   buildError: { color: colors.rust, fontSize: 12.5, marginBottom: 10, fontFamily: fonts.ui },
   buildHint: { color: colors.inkSoft, fontSize: 12, lineHeight: 17, marginBottom: 10, fontFamily: fonts.ui },
+  newWeekCard: {
+    backgroundColor: colors.marigoldSoft,
+    borderRadius: radii.xxl,
+    padding: 18,
+    marginBottom: spacing.xxl,
+  },
+  newWeekTitle: { fontFamily: fonts.display, fontStyle: 'italic', fontSize: 20, color: colors.ink, marginBottom: 4 },
+  newWeekBody: { fontSize: 13, color: colors.inkSoft, lineHeight: 19, marginBottom: 10, fontFamily: fonts.ui },
+  newWeekDismiss: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12 },
+  newWeekDismissText: { fontSize: 13, color: colors.inkSoft, fontFamily: fonts.uiSemiBold, fontWeight: '600' },
   tonightCard: { backgroundColor: colors.sageSoft, borderRadius: radii.xxl, padding: 18, marginBottom: spacing.xxl },
   tonightHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 },
   tonightLabel: { fontSize: 10.5, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', color: colors.marigoldInk, fontFamily: fonts.uiBold },

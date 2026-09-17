@@ -166,13 +166,27 @@ interface MemberRow {
   note: string;
 }
 
-function buildPrompt(recipes: RecipeRow[], members: MemberRow[], kosher: boolean) {
+interface HistoryRow {
+  generated_at: string;
+  summary: { bases?: string[]; weekday_meals?: string[]; shabbat_meals?: string[] };
+}
+
+function buildPrompt(recipes: RecipeRow[], members: MemberRow[], kosher: boolean, recentHistory: HistoryRow[]) {
   const recipeList = recipes
     .map((r) => `- ${r.title} (${r.kosher}${r.both_audiences ? '' : ', family-only'})${r.body ? `: ${r.body}` : ''}`)
     .join('\n');
   const memberList = members.length
     ? members.map((m) => `- ${m.name || 'Unnamed'} (${m.age || 'age unknown'}): ${m.note || 'no notes yet'}`).join('\n')
     : '- No household preferences recorded yet.';
+
+  const recentDishes = recentHistory.flatMap((h) => [
+    ...(h.summary.bases ?? []),
+    ...(h.summary.weekday_meals ?? []),
+    ...(h.summary.shabbat_meals ?? []),
+  ]);
+  const varietyNote = recentDishes.length
+    ? `\nRecently cooked in the last ${recentHistory.length} week${recentHistory.length === 1 ? '' : 's'} (do not repeat these dishes or bases this week — vary it up; repeating something from several weeks back is fine, but not from last week):\n${recentDishes.map((d) => `- ${d}`).join('\n')}\n`
+    : '';
 
   return `You are planning one week of home cooking for a family. Your main job is to find real opportunities to batch-cook a component once and reuse it in different forms across multiple meals during the week — e.g. a big batch of rice on Sunday becomes a side Monday and gets fried into a stir-fry Wednesday; a roasted chicken becomes Tuesday's dinner and Thursday's soup base. This reuse is the whole point of the plan, not a decoration — at least half the weekday dinners should draw on a shared base.
 
@@ -183,7 +197,7 @@ ${memberList}
 
 Recipes already in their library (prefer these; you may also invent close variations or new ideas, especially for remixing a base into a new form):
 ${recipeList || '- (empty — invent a reasonable starter set)'}
-
+${varietyNote}
 Build:
 1. bases: 4-6 batch-cook components for Sunday.
 2. weekday_meals: 4-6 dinners (Sun-Thu), reusing bases across at least half of them in genuinely different forms (not the same dish twice). Give a family version and, where the household includes children, a simpler kid version with a stealth-vegetable idea where natural — otherwise repeat family_desc as kids_desc and leave stealth_veg null.
@@ -245,6 +259,14 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) return json({ error: 'Missing Authorization header' }, 401);
 
+    let weekStart: string | null = null;
+    try {
+      const body = await req.json();
+      weekStart = typeof body?.week_start === 'string' ? body.week_start : null;
+    } catch {
+      // no/invalid JSON body — fine, weekStart just stays null
+    }
+
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -255,10 +277,15 @@ Deno.serve(async (req) => {
     } = await supabase.auth.getUser();
     if (userError || !user) return json({ error: 'Not authenticated' }, 401);
 
-    const [{ data: recipes }, { data: members }, { data: profile }] = await Promise.all([
+    const [{ data: recipes }, { data: members }, { data: profile }, { data: recentHistory }] = await Promise.all([
       supabase.from('recipes').select('title, body, kosher, both_audiences'),
       supabase.from('household_members').select('name, age, note').order('sort_order'),
       supabase.from('profiles').select('kosher').eq('id', user.id).single(),
+      supabase
+        .from('plan_history')
+        .select('generated_at, summary')
+        .order('generated_at', { ascending: false })
+        .limit(3),
     ]);
 
     if (!recipes || recipes.length === 0) {
@@ -268,8 +295,38 @@ Deno.serve(async (req) => {
       );
     }
 
-    const prompt = buildPrompt(recipes as RecipeRow[], (members ?? []) as MemberRow[], profile?.kosher ?? true);
+    const prompt = buildPrompt(
+      recipes as RecipeRow[],
+      (members ?? []) as MemberRow[],
+      profile?.kosher ?? true,
+      (recentHistory ?? []) as HistoryRow[]
+    );
     const plan = await callClaude(prompt);
+
+    // Archive the outgoing plan (if any) so future generations know what was
+    // cooked recently and can vary the new week against it.
+    const [{ data: outgoingBases }, { data: outgoingWeekday }, { data: outgoingShabbat }] = await Promise.all([
+      supabase.from('bases').select('label'),
+      supabase.from('weekday_meals').select('family_desc'),
+      supabase.from('shabbat_courses').select('family_desc'),
+    ]);
+    if (outgoingBases?.length || outgoingWeekday?.length || outgoingShabbat?.length) {
+      await supabase.from('plan_history').insert({
+        user_id: user.id,
+        summary: {
+          bases: (outgoingBases ?? []).map((b: { label: string }) => b.label),
+          weekday_meals: (outgoingWeekday ?? []).map((m: { family_desc: string }) => m.family_desc),
+          shabbat_meals: (outgoingShabbat ?? []).map((c: { family_desc: string }) => c.family_desc),
+        },
+      });
+      // Keep history bounded — only the last 6 weeks matter for variety.
+      const { data: allHistory } = await supabase
+        .from('plan_history')
+        .select('id')
+        .order('generated_at', { ascending: false });
+      const staleIds = (allHistory ?? []).slice(6).map((h: { id: string }) => h.id);
+      if (staleIds.length) await supabase.from('plan_history').delete().in('id', staleIds);
+    }
 
     // Replace any previously generated plan. RLS already scopes every table
     // to this user, so "match everything" here only ever touches their rows.
@@ -361,10 +418,12 @@ Deno.serve(async (req) => {
     }
 
     // Fresh plan means the AI-pick cursor and any per-item edits (skips,
-    // guest count, course text) from the old plan no longer apply.
+    // guest count, course text) from the old plan no longer apply. Record
+    // which calendar week this plan is for, so the client can tell when a
+    // new real-world week has started without a manual "rebuild".
     await supabase
       .from('profiles')
-      .update({ ai_index: 0, ai_added: false, guest_count: 4 })
+      .update({ ai_index: 0, ai_added: false, guest_count: 4, current_week_start: weekStart })
       .eq('id', user.id);
 
     return json({ ok: true });

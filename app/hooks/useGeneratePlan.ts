@@ -1,18 +1,23 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { getCurrentWeekStart } from '../lib/dates';
 
 /** Calls the generate-weekly-plan Edge Function, which asks Claude to build a
  * full week (bases, weekday meals, Shabbat, groceries, prep, AI suggestions)
  * from the caller's own recipes and household preferences, then refreshes
- * every screen that reads plan data. */
+ * every screen that reads plan data. Tags the new plan with the current
+ * real-world week (Sunday's date) so the app can later tell when a new week
+ * has started. */
 export function useGenerateWeeklyPlan() {
   const { user, refreshProfile } = useAuth();
   const qc = useQueryClient();
 
   return useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke('generate-weekly-plan');
+      const { data, error } = await supabase.functions.invoke('generate-weekly-plan', {
+        body: { week_start: getCurrentWeekStart() },
+      });
       if (error) {
         // supabase-js only gives a generic "non-2xx" message here — the actual
         // reason (e.g. "add a recipe first") is in the function's JSON body.

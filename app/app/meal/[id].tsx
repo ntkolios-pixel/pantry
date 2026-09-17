@@ -5,6 +5,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fonts, kosherStyle } from '../../constants/theme';
 import { BackLink, Card, PrimaryButton, Screen, Tag } from '../../components/ui';
 import { useBases, useWeekdayMeal } from '../../hooks/usePlan';
+import { useAuth } from '../../contexts/AuthContext';
+import { formatWeekdayDate } from '../../lib/dates';
 
 export default function MealDetail() {
   const router = useRouter();
@@ -12,18 +14,20 @@ export default function MealDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: meal } = useWeekdayMeal(id);
   const { data: bases } = useBases();
+  const { profile } = useAuth();
 
   if (!meal) return <View style={{ flex: 1, backgroundColor: colors.cream }} />;
 
   const k = kosherStyle[meal.kosher];
   const hasBoth = !meal.is_leftover && meal.family_desc !== meal.kids_desc;
   const baseLabel = meal.base_key ? bases?.find((b) => b.key === meal.base_key)?.label ?? null : null;
+  const dayLabel = formatWeekdayDate(profile?.current_week_start, meal.day_key, meal.day_label);
 
   return (
     <Screen contentStyle={{ paddingTop: insets.top + 16 }}>
       <BackLink label="← Back to plan" onPress={() => router.back()} />
       <View style={styles.headerRow}>
-        <Text style={styles.dayLabel}>{meal.day_label}</Text>
+        <Text style={styles.dayLabel}>{dayLabel}</Text>
         <Tag bg={k.bg} fg={k.fg} label={k.label} />
       </View>
       <Text style={styles.title}>{meal.family_desc}</Text>

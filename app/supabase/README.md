@@ -11,8 +11,7 @@ project requires your own Supabase account. Do this once, from your machine:
    with the Supabase CLI + Docker if you'd rather develop against a local
    Postgres instance).
 2. In the SQL editor, run the migrations in `supabase/migrations/` **in
-   order** (`0001_init.sql`, then `0002_seed_function.sql`, then
-   `0003_storage.sql`). If you have the Supabase CLI linked to the project,
+   numeric order** (`0001` through `0005`). If you have the Supabase CLI linked to the project,
    `supabase db push` does this for you.
 
 ## 2. Configure auth providers
@@ -78,6 +77,11 @@ fail — `lib/supabase.ts` logs a warning at startup if they're missing.
   alongside the plan so they stay consistent with it.
 - `discover_recipes`, `ai_suggestions` — the Discover feed and the Plan tab's
   "AI pick" card.
+- `plan_history` — a short summary (dish names only) of each past generated
+  week, so the next generation can avoid repeating what you just had.
+  `profiles.current_week_start` tracks which real calendar week the active
+  plan is for — the app compares it to today's date to know when to show the
+  "It's a new week" prompt on Home, instead of a manual rebuild button.
 
 Every table is scoped by `user_id` with row-level security (`auth.uid() =
 user_id`), so one Postgres database safely serves every account.

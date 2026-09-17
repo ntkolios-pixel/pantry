@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Alert, PanResponder, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { PanResponder, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors, fonts, kosherStyle, radii, spacing } from '../../constants/theme';
 import { Header } from '../../components/Header';
@@ -15,7 +15,7 @@ import {
 } from '../../hooks/usePlan';
 import type { WeekdayMeal } from '../../lib/database.types';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
-import { useGenerateWeeklyPlan } from '../../hooks/useGeneratePlan';
+import { formatShabbatDate, formatWeekdayDate, formatWeekOf } from '../../lib/dates';
 
 export default function Plan() {
   const router = useRouter();
@@ -26,8 +26,6 @@ export default function Plan() {
   const { data: aiSuggestions } = useAiSuggestions();
   const setSkip = useSetMealSkip();
   const updateCourse = useUpdateShabbatCourse();
-  const generatePlan = useGenerateWeeklyPlan();
-  const [rebuildError, setRebuildError] = useState<string | null>(null);
 
   const baseLabel = (key: string | null) => (key ? bases?.find((b) => b.key === key)?.label ?? null : null);
 
@@ -41,39 +39,23 @@ export default function Plan() {
     if (!Number.isNaN(n)) updateProfile({ guest_count: n });
   }, 500);
 
-  function confirmRebuild() {
-    setRebuildError(null);
-    Alert.alert(
-      'Rebuild this week?',
-      'This replaces your current plan, groceries, and prep checklist with a new AI-generated week based on your library and preferences. Any checked-off items or edits will be lost.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Rebuild',
-          style: 'destructive',
-          onPress: () => generatePlan.mutate(undefined, { onError: (e) => setRebuildError(e.message) }),
-        },
-      ]
-    );
-  }
-
   return (
     <View style={{ flex: 1, backgroundColor: colors.cream }}>
       <Header title="Your Pantry, this week" showSubtitle={false} />
       <Screen contentStyle={{ gap: 14 }}>
         <View style={styles.topRow}>
           <BackLink label="← Home" onPress={() => router.push('/(tabs)/home')} />
-          <Pressable onPress={confirmRebuild} disabled={generatePlan.isPending} hitSlop={8}>
-            <Text style={styles.rebuildLink}>{generatePlan.isPending ? 'Rebuilding…' : '✦ Rebuild my week'}</Text>
-          </Pressable>
+          {profile?.current_week_start ? (
+            <Text style={styles.weekOfLabel}>{formatWeekOf(profile.current_week_start)}</Text>
+          ) : null}
         </View>
-        {rebuildError ? <Text style={styles.rebuildError}>{rebuildError}</Text> : null}
 
         <SectionLabel>Weekday · Sun–Thu</SectionLabel>
         {(weekdayMeals ?? []).map((m) => (
           <WeekdayCard
             key={m.id}
             meal={m}
+            dayLabel={formatWeekdayDate(profile?.current_week_start, m.day_key, m.day_label)}
             baseLabel={baseLabel(m.base_key)}
             onOpenDetail={() => router.push(`/meal/${m.id}`)}
             onSkip={() => setSkip.mutate({ id: m.id, skipLabel: 'Skipping this night' })}
@@ -127,7 +109,8 @@ export default function Plan() {
 
         {(shabbatMeals ?? []).map((sm) => {
           const k = kosherStyle[sm.kosher];
-          const day = sm.has_guests ? `${sm.day_label} · ${profile?.guest_count ?? 4} guests` : sm.day_label;
+          const dateLabel = formatShabbatDate(profile?.current_week_start, sm.meal_key, sm.day_label);
+          const day = sm.has_guests ? `${dateLabel} · ${profile?.guest_count ?? 4} guests` : dateLabel;
           return (
             <Card key={sm.id}>
               <View style={styles.mealHeader}>
@@ -149,12 +132,14 @@ export default function Plan() {
 
 function WeekdayCard({
   meal,
+  dayLabel,
   baseLabel,
   onOpenDetail,
   onSkip,
   onUndoSkip,
 }: {
   meal: WeekdayMeal;
+  dayLabel: string;
   baseLabel: string | null;
   onOpenDetail: () => void;
   onSkip: () => void;
@@ -180,7 +165,7 @@ function WeekdayCard({
   return (
     <Card>
       <View style={styles.mealHeader}>
-        <Text style={styles.dayLabel}>{meal.day_label}</Text>
+        <Text style={styles.dayLabel}>{dayLabel}</Text>
         <View style={{ flexDirection: 'row', gap: 6 }}>
           {meal.is_leftover ? <Tag bg={colors.slateSoft} fg={colors.slate} label="Leftovers" /> : null}
           <Tag bg={k.bg} fg={k.fg} label={k.label} />
@@ -262,8 +247,7 @@ function ShabbatCourseRow({
 
 const styles = StyleSheet.create({
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  rebuildLink: { fontSize: 12.5, fontWeight: '700', color: colors.marigold, fontFamily: fonts.uiBold },
-  rebuildError: { color: colors.rust, fontSize: 12.5, fontFamily: fonts.ui },
+  weekOfLabel: { fontSize: 12.5, color: colors.inkSoft, fontFamily: fonts.ui },
   mealHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 9 },
   dayLabel: { fontSize: 12.5, fontWeight: '700', color: colors.ink, fontFamily: fonts.uiBold },
   skippedRow: {

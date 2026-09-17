@@ -13,6 +13,7 @@ export interface Profile {
   guest_count: number;
   ai_index: number;
   ai_added: boolean;
+  current_week_start: string | null;
   created_at: string;
 }
 
