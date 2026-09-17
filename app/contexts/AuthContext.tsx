@@ -21,6 +21,29 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+/** Races a promise against a timeout so a slow/hung native call (e.g. a flaky
+ * AsyncStorage read on-device) can't block the app on the loading screen
+ * forever — falls back to `fallback` instead. */
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      console.warn(`[auth] timed out after ${ms}ms — continuing without a restored session`);
+      resolve(fallback);
+    }, ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        console.warn('[auth] getSession() failed — continuing without a restored session', err);
+        resolve(fallback);
+      }
+    );
+  });
+}
+
 async function fetchProfileWithRetry(userId: string, attempts = 5): Promise<Profile | null> {
   for (let i = 0; i < attempts; i++) {
     const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
@@ -48,7 +71,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    supabase.auth.getSession().then(async ({ data }) => {
+    withTimeout(supabase.auth.getSession(), 8000, { data: { session: null } } as Awaited<
+      ReturnType<typeof supabase.auth.getSession>
+    >).then(async ({ data }) => {
       setSession(data.session);
       if (data.session?.user) await loadProfile(data.session.user.id);
       setLoading(false);
