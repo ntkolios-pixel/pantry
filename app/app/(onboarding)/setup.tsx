@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors, fonts, personTints, radii, spacing } from '../../constants/theme';
-import { PrimaryButton, Screen, StepLabel } from '../../components/ui';
+import { BackLink, PrimaryButton, Screen, StepLabel } from '../../components/ui';
 import { useAuth } from '../../contexts/AuthContext';
 import { useHouseholdMembers, useUpdateHouseholdMember } from '../../hooks/useHousehold';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
@@ -34,12 +34,14 @@ export default function Setup() {
 
   async function continueOn() {
     await updateProfile({ onboarding_stage: 'recipes' });
-    router.replace('/(onboarding)/recipes');
+    router.push('/(onboarding)/recipes');
   }
 
   return (
     <Screen contentStyle={{ paddingTop: 56, gap: 22 }}>
       <View>
+        <BackLink label="← Back" onPress={() => router.back()} />
+        <View style={{ height: 10 }} />
         <StepLabel step={3} of={4} />
         <Text style={styles.title}>Tell us about your eaters</Text>
         <Text style={styles.body}>Likes, dislikes, allergies — anything that helps us plan well for everyone.</Text>

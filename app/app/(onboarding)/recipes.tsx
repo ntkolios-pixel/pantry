@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors, fonts, radii, spacing } from '../../constants/theme';
-import { PrimaryButton, Screen, StepLabel } from '../../components/ui';
+import { BackLink, PrimaryButton, Screen, StepLabel } from '../../components/ui';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAddRecipe, useRecipes } from '../../hooks/useRecipes';
 import { useGenerateWeeklyPlan } from '../../hooks/useGeneratePlan';
@@ -20,7 +20,11 @@ export default function Recipes() {
   function submit() {
     const trimmed = title.trim();
     if (!trimmed) return;
-    addRecipe.mutate({ title: trimmed, source: 'manual' });
+    setError(null);
+    addRecipe.mutate(
+      { title: trimmed, source: 'manual' },
+      { onError: (e) => setError(e instanceof Error ? e.message : 'Could not add that recipe.') }
+    );
     setTitle('');
   }
 
@@ -38,6 +42,8 @@ export default function Recipes() {
   return (
     <Screen scroll={false} contentStyle={{ justifyContent: 'center', gap: 22 }}>
       <View>
+        <BackLink label="← Back" onPress={() => router.back()} />
+        <View style={{ height: 10 }} />
         <StepLabel step={4} of={4} />
         <Text style={styles.title}>Add a few recipes</Text>
         <Text style={styles.body}>
