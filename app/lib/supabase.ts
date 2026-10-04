@@ -32,6 +32,7 @@ const supabaseAnonKey =
   process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? (extra.supabaseAnonKey as string | undefined);
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+export const debugSupabaseUrl = supabaseUrl || '(not set — falling back to placeholder)';
 
 if (!isSupabaseConfigured) {
   // eslint-disable-next-line no-console

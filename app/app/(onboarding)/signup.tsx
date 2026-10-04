@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { colors, fonts, radii } from '../../constants/theme';
 import { PrimaryButton, StepLabel, TextLink } from '../../components/ui';
 import { useAuth } from '../../contexts/AuthContext';
+import { debugSupabaseUrl } from '../../lib/supabase';
 
 export default function Signup() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function Signup() {
   const isSignup = mode === 'signup';
 
   async function submit() {
-    Alert.alert('Checkpoint 1', 'submit() started');
+    Alert.alert('Checkpoint 1', `submit() started. Using URL: ${debugSupabaseUrl}`);
     setError(null);
     setInfo(null);
     if (!email.trim() || !password) {
