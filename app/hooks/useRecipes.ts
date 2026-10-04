@@ -39,6 +39,18 @@ export interface NewRecipeInput {
   image_url?: string | null;
 }
 
+export function useRemoveRecipe() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('recipes').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['recipes', user?.id] }),
+  });
+}
+
 export function useAddRecipe() {
   const { user } = useAuth();
   const qc = useQueryClient();
