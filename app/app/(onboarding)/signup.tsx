@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { colors, fonts, radii } from '../../constants/theme';
 import { PrimaryButton, StepLabel, TextLink } from '../../components/ui';
 import { useAuth } from '../../contexts/AuthContext';
-import { debugSupabaseUrl } from '../../lib/supabase';
 
 export default function Signup() {
   const router = useRouter();
@@ -22,20 +21,16 @@ export default function Signup() {
   const isSignup = mode === 'signup';
 
   async function submit() {
-    Alert.alert('Checkpoint 1', `submit() started. Using URL: ${debugSupabaseUrl}`);
     setError(null);
     setInfo(null);
     if (!email.trim() || !password) {
-      Alert.alert('Checkpoint 2a', 'Missing email or password');
       setError('Email and password are required.');
       return;
     }
     if (isSignup && !name.trim()) {
-      Alert.alert('Checkpoint 2b', 'Missing name');
       setError('Tell us your name.');
       return;
     }
-    Alert.alert('Checkpoint 3', 'Validation passed, about to call the server');
     setLoading(true);
     try {
       if (isSignup) {
@@ -47,10 +42,8 @@ export default function Signup() {
         // else: session is set, root redirect gate takes it from here
       } else {
         await signInWithEmail(email.trim(), password);
-        Alert.alert('Checkpoint 4', 'signInWithEmail returned successfully');
       }
     } catch (e) {
-      Alert.alert('Checkpoint 5 (caught error)', e instanceof Error ? e.message : String(e));
       setError(e instanceof Error ? e.message : 'Something went wrong.');
     } finally {
       setLoading(false);
