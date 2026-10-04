@@ -15,6 +15,7 @@ export default function Recipes() {
   const generatePlan = useGenerateWeeklyPlan();
 
   const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   function submit() {
@@ -22,10 +23,11 @@ export default function Recipes() {
     if (!trimmed) return;
     setError(null);
     addRecipe.mutate(
-      { title: trimmed, source: 'manual' },
+      { title: trimmed, body: body.trim(), source: 'manual' },
       { onError: (e) => setError(e instanceof Error ? e.message : 'Could not add that recipe.') }
     );
     setTitle('');
+    setBody('');
   }
 
   async function start() {
@@ -40,7 +42,7 @@ export default function Recipes() {
   }
 
   return (
-    <Screen scroll={false} contentStyle={{ justifyContent: 'center', gap: 22 }}>
+    <Screen contentStyle={{ justifyContent: 'center', gap: 22 }}>
       <View>
         <BackLink label="← Back" onPress={() => router.replace('/(onboarding)/setup')} />
         <View style={{ height: 10 }} />
@@ -60,19 +62,25 @@ export default function Recipes() {
               <Text style={styles.addedLabel}>Added</Text>
             </View>
           ))}
-        <View style={styles.inputRow}>
-          <TextInput
-            value={title}
-            onChangeText={setTitle}
-            placeholder="Recipe title"
-            placeholderTextColor={colors.inkFaint}
-            onSubmitEditing={submit}
-            style={styles.input}
-          />
-          <Pressable onPress={submit} style={styles.addButton}>
-            <Text style={styles.addButtonText}>+</Text>
-          </Pressable>
-        </View>
+        <TextInput
+          value={title}
+          onChangeText={setTitle}
+          placeholder="Recipe title"
+          placeholderTextColor={colors.inkFaint}
+          style={styles.input}
+        />
+        <TextInput
+          value={body}
+          onChangeText={setBody}
+          placeholder="Ingredients and steps (optional)"
+          placeholderTextColor={colors.inkFaint}
+          multiline
+          numberOfLines={5}
+          style={[styles.input, styles.textarea]}
+        />
+        <Pressable onPress={submit} style={styles.addButton}>
+          <Text style={styles.addButtonText}>+ Add recipe</Text>
+        </Pressable>
       </View>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -102,9 +110,7 @@ const styles = StyleSheet.create({
   },
   addedTitle: { fontSize: 13.5, color: colors.ink, fontFamily: fonts.ui },
   addedLabel: { fontSize: 11, color: colors.inkFaint, fontFamily: fonts.ui },
-  inputRow: { flexDirection: 'row', gap: 8 },
   input: {
-    flex: 1,
     fontFamily: fonts.ui,
     fontSize: 14,
     color: colors.ink,
@@ -115,15 +121,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
+  textarea: { textAlignVertical: 'top', minHeight: 90 },
   addButton: {
-    width: 42,
-    height: 42,
+    alignItems: 'center',
+    paddingVertical: 11,
     borderRadius: radii.sm,
     backgroundColor: colors.marigold,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  addButtonText: { color: colors.paper, fontSize: 19, fontWeight: '600' },
+  addButtonText: { color: colors.paper, fontSize: 13, fontWeight: '600', fontFamily: fonts.uiSemiBold },
   error: { color: colors.rust, fontSize: 12.5, fontFamily: fonts.ui },
   hint: { color: colors.inkSoft, fontSize: 12, lineHeight: 17, fontFamily: fonts.ui },
 });
