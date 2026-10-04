@@ -32,6 +32,8 @@ export function RecipeCapture({ onSaved }: { onSaved?: () => void }) {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [linkText, setLinkText] = useState('');
+  const [linkTitle, setLinkTitle] = useState('');
+  const [linkTitleTouched, setLinkTitleTouched] = useState(false);
 
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [ocrState, setOcrState] = useState<'idle' | 'scanned'>('idle');
@@ -52,13 +54,27 @@ export function RecipeCapture({ onSaved }: { onSaved?: () => void }) {
     );
   }
 
+  function guessTitleFromText(text: string) {
+    const firstLine = text.split('\n').map((l) => l.trim()).find((l) => l.length > 0) ?? '';
+    if (!firstLine || /^https?:\/\//i.test(firstLine)) return '';
+    return firstLine.length > 80 ? `${firstLine.slice(0, 77)}...` : firstLine;
+  }
+
+  function onLinkTextChange(value: string) {
+    setLinkText(value);
+    if (!linkTitleTouched) setLinkTitle(guessTitleFromText(value));
+  }
+
   function submitLink() {
     if (!linkText.trim()) return;
+    const resolvedTitle = linkTitle.trim() || 'Recipe from link';
     addRecipe.mutate(
-      { title: 'Recipe from link — tap to fill in details', body: linkText.trim(), source: 'link' },
+      { title: resolvedTitle, body: linkText.trim(), source: 'link' },
       {
         onSuccess: () => {
           setLinkText('');
+          setLinkTitle('');
+          setLinkTitleTouched(false);
           onSaved?.();
         },
       }
@@ -148,13 +164,25 @@ export function RecipeCapture({ onSaved }: { onSaved?: () => void }) {
           </Text>
           <TextInput
             value={linkText}
-            onChangeText={setLinkText}
+            onChangeText={onLinkTextChange}
             placeholder="Paste a link or a full recipe"
             placeholderTextColor={colors.inkFaint}
             multiline
             numberOfLines={4}
             style={[styles.input, styles.textarea]}
           />
+          {linkText.trim() ? (
+            <TextInput
+              value={linkTitle}
+              onChangeText={(v) => {
+                setLinkTitle(v);
+                setLinkTitleTouched(true);
+              }}
+              placeholder="Recipe title"
+              placeholderTextColor={colors.inkFaint}
+              style={styles.input}
+            />
+          ) : null}
           <PrimaryButton label="Save to library" onPress={submitLink} loading={addRecipe.isPending} />
         </View>
       ) : null}
