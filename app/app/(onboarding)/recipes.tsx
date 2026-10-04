@@ -1,18 +1,86 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fonts, radii } from '../../constants/theme';
-import { BackLink, Card, PrimaryButton, Screen, StepLabel } from '../../components/ui';
+import { BackLink, Card, PrimaryButton, Screen, SecondaryButton, StepLabel } from '../../components/ui';
 import { RecipeCapture } from '../../components/RecipeCapture';
 import { useAuth } from '../../contexts/AuthContext';
-import { useRecipes, useRemoveRecipe } from '../../hooks/useRecipes';
+import { useRecipes, useRemoveRecipe, useUpdateRecipe } from '../../hooks/useRecipes';
 import { useGenerateWeeklyPlan } from '../../hooks/useGeneratePlan';
+import type { Recipe } from '../../lib/database.types';
+
+function AddedRecipeRow({ recipe }: { recipe: Recipe }) {
+  const updateRecipe = useUpdateRecipe();
+  const removeRecipe = useRemoveRecipe();
+
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(recipe.title);
+  const [body, setBody] = useState(recipe.body);
+
+  function save() {
+    if (!title.trim()) return;
+    updateRecipe.mutate(
+      { id: recipe.id, patch: { title: title.trim(), body } },
+      { onSuccess: () => setEditing(false) }
+    );
+  }
+
+  function cancel() {
+    setTitle(recipe.title);
+    setBody(recipe.body);
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <View style={[styles.addedRow, { flexDirection: 'column', alignItems: 'stretch', gap: 8 }]}>
+        <TextInput
+          value={title}
+          onChangeText={setTitle}
+          placeholder="Recipe title"
+          placeholderTextColor={colors.inkFaint}
+          style={styles.editInput}
+        />
+        <TextInput
+          value={body}
+          onChangeText={setBody}
+          placeholder="Ingredients and steps"
+          placeholderTextColor={colors.inkFaint}
+          multiline
+          numberOfLines={4}
+          style={[styles.editInput, styles.editTextarea]}
+        />
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <SecondaryButton label="Cancel" onPress={cancel} style={{ flex: 1 }} />
+          <SecondaryButton label="Save" onPress={save} loading={updateRecipe.isPending} style={{ flex: 1 }} />
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.addedRow}>
+      <Pressable style={{ flex: 1 }} onPress={() => setEditing(true)}>
+        <Text style={styles.addedTitle} numberOfLines={1}>
+          {recipe.title}
+        </Text>
+      </Pressable>
+      <Pressable onPress={() => setEditing(true)} hitSlop={8}>
+        <Text style={styles.editLabel}>Edit</Text>
+      </Pressable>
+      <Pressable onPress={() => removeRecipe.mutate(recipe.id)} hitSlop={8}>
+        <Text style={styles.removeLabel}>×</Text>
+      </Pressable>
+    </View>
+  );
+}
 
 export default function Recipes() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { updateProfile } = useAuth();
   const { data: recipes } = useRecipes();
-  const removeRecipe = useRemoveRecipe();
   const generatePlan = useGenerateWeeklyPlan();
 
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +97,7 @@ export default function Recipes() {
   }
 
   return (
-    <Screen contentStyle={{ gap: 22 }}>
+    <Screen contentStyle={{ paddingTop: insets.top + 24, gap: 22 }}>
       <View>
         <BackLink label="← Back" onPress={() => router.replace('/(onboarding)/setup')} />
         <View style={{ height: 10 }} />
@@ -43,14 +111,7 @@ export default function Recipes() {
       {(recipes ?? []).length > 0 ? (
         <View style={{ gap: 8 }}>
           {(recipes ?? []).map((r) => (
-            <View key={r.id} style={styles.addedRow}>
-              <Text style={styles.addedTitle} numberOfLines={1}>
-                {r.title}
-              </Text>
-              <Pressable onPress={() => removeRecipe.mutate(r.id)} hitSlop={8}>
-                <Text style={styles.removeLabel}>×</Text>
-              </Pressable>
-            </View>
+            <AddedRecipeRow key={r.id} recipe={r} />
           ))}
         </View>
       ) : null}
@@ -85,8 +146,21 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
     borderRadius: radii.sm,
   },
-  addedTitle: { flex: 1, fontSize: 13.5, color: colors.ink, fontFamily: fonts.ui },
+  addedTitle: { fontSize: 13.5, color: colors.ink, fontFamily: fonts.ui },
+  editLabel: { color: colors.inkSoft, fontSize: 12.5, fontFamily: fonts.ui },
   removeLabel: { color: colors.inkFaint, fontSize: 17 },
+  editInput: {
+    fontFamily: fonts.ui,
+    fontSize: 13.5,
+    color: colors.ink,
+    backgroundColor: colors.linen,
+    borderWidth: 1,
+    borderColor: colors.line,
+    borderRadius: radii.sm,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  editTextarea: { textAlignVertical: 'top', minHeight: 70 },
   cardLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 0.6, color: colors.inkFaint, fontFamily: fonts.uiBold },
   error: { color: colors.rust, fontSize: 12.5, fontFamily: fonts.ui },
   hint: { color: colors.inkSoft, fontSize: 12, lineHeight: 17, fontFamily: fonts.ui },

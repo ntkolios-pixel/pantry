@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fonts, radii, spacing } from '../../constants/theme';
-import { PrimaryButton, StepLabel } from '../../components/ui';
+import { PrimaryButton, Screen, StepLabel } from '../../components/ui';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   useAddHouseholdMember,
@@ -20,6 +21,7 @@ interface Row {
 
 export default function Household() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { profile, updateProfile } = useAuth();
   const { data: members } = useHouseholdMembers();
   const addMember = useAddHouseholdMember();
@@ -67,7 +69,7 @@ export default function Household() {
   }
 
   return (
-    <View style={styles.wrap}>
+    <Screen contentStyle={{ paddingTop: insets.top + 24, gap: spacing.xl }}>
       <View>
         <StepLabel step={2} of={4} />
         <Text style={styles.title}>Who are you cooking for?</Text>
@@ -112,12 +114,11 @@ export default function Household() {
       </View>
 
       <PrimaryButton label="Continue" onPress={continueOn} style={{ marginTop: 4 }} />
-    </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: colors.cream, justifyContent: 'center', padding: 32, paddingHorizontal: 28, gap: spacing.xl },
   title: { fontFamily: fonts.display, fontStyle: 'italic', fontSize: 24, color: colors.ink, marginBottom: 6 },
   body: { fontSize: 12.5, color: colors.inkSoft, lineHeight: 19, fontFamily: fonts.ui },
   row: { flexDirection: 'row', gap: 8, alignItems: 'center' },

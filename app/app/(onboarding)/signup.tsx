@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fonts, radii } from '../../constants/theme';
-import { PrimaryButton, StepLabel, TextLink } from '../../components/ui';
+import { PrimaryButton, Screen, StepLabel, TextLink } from '../../components/ui';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function Signup() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { mode: initialMode } = useLocalSearchParams<{ mode?: string }>();
   const { signUpWithEmail, signInWithEmail } = useAuth();
 
@@ -53,7 +55,7 @@ export default function Signup() {
   }
 
   return (
-    <View style={styles.wrap}>
+    <Screen contentStyle={{ paddingTop: insets.top + 24, gap: 14 }}>
       {isSignup ? <StepLabel step={1} of={4} /> : null}
       <Text style={styles.title}>{isSignup ? 'Create your account' : 'Welcome back'}</Text>
 
@@ -106,12 +108,11 @@ export default function Signup() {
           setMode(isSignup ? 'login' : 'signup');
         }}
       />
-    </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: colors.cream, justifyContent: 'center', padding: 28, gap: 14 },
   title: { fontFamily: fonts.display, fontStyle: 'italic', fontSize: 24, color: colors.ink, marginBottom: 6 },
   input: {
     fontFamily: fonts.ui,

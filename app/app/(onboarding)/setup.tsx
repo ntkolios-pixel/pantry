@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fonts, personTints, radii, spacing } from '../../constants/theme';
 import { BackLink, PrimaryButton, Screen, StepLabel } from '../../components/ui';
 import { useAuth } from '../../contexts/AuthContext';
@@ -9,6 +10,7 @@ import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 
 export default function Setup() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { updateProfile } = useAuth();
   const { data: members } = useHouseholdMembers();
   const updateMember = useUpdateHouseholdMember();
@@ -38,7 +40,7 @@ export default function Setup() {
   }
 
   return (
-    <Screen contentStyle={{ paddingTop: 56, gap: 22 }}>
+    <Screen contentStyle={{ paddingTop: insets.top + 24, gap: 22 }}>
       <View>
         <BackLink label="← Back" onPress={() => router.replace('/(onboarding)/household')} />
         <View style={{ height: 10 }} />
