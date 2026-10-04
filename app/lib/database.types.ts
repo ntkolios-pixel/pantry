@@ -36,6 +36,7 @@ export interface Recipe {
   both_audiences: boolean;
   source: RecipeSource;
   image_url: string | null;
+  image_urls: string[];
   created_at: string;
 }
 

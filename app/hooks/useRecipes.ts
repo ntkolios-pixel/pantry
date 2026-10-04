@@ -36,7 +36,20 @@ export interface NewRecipeInput {
   title: string;
   body?: string;
   source: RecipeSource;
-  image_url?: string | null;
+  image_urls?: string[];
+}
+
+export function useUpdateRecipe() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: Partial<NewRecipeInput> }) => {
+      const { data, error } = await supabase.from('recipes').update(patch).eq('id', id).select().single();
+      if (error) throw error;
+      return data as Recipe;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['recipes', user?.id] }),
+  });
 }
 
 export function useRemoveRecipe() {
@@ -64,7 +77,7 @@ export function useAddRecipe() {
           title: input.title,
           body: input.body ?? '',
           source: input.source,
-          image_url: input.image_url ?? null,
+          image_urls: input.image_urls ?? [],
           kosher: 'parve',
           both_audiences: true,
         })

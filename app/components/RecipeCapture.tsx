@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { colors, fonts, radii } from '../constants/theme';
-import { PrimaryButton, WrapPill } from './ui';
+import { PrimaryButton, SecondaryButton, WrapPill } from './ui';
 import { useAuth } from '../contexts/AuthContext';
 import { useAddRecipe } from '../hooks/useRecipes';
 import { useDiscoverRecipes, useAddDiscoverToLibrary } from '../hooks/useDiscover';
@@ -21,7 +21,17 @@ const METHODS: { key: Method; label: string }[] = [
 // The one form for getting a recipe into the library — shared by the
 // onboarding "add a few recipes" step and the full-app "Add a recipe"
 // screen so both offer the same methods and stay in sync.
-export function RecipeCapture({ onSaved }: { onSaved?: () => void }) {
+export function RecipeCapture({
+  onSaved,
+  embedded = false,
+}: {
+  onSaved?: () => void;
+  /** True when this form sits inside a screen that has its own, more important
+   * primary action below it (e.g. onboarding's "Start planning"). Downgrades
+   * this form's own save buttons to a secondary style so the two don't compete. */
+  embedded?: boolean;
+}) {
+  const SubmitButton = embedded ? SecondaryButton : PrimaryButton;
   const { user } = useAuth();
   const addRecipe = useAddRecipe();
   const { data: discoverList } = useDiscoverRecipes();
@@ -35,7 +45,7 @@ export function RecipeCapture({ onSaved }: { onSaved?: () => void }) {
   const [linkTitle, setLinkTitle] = useState('');
   const [linkTitleTouched, setLinkTitleTouched] = useState(false);
 
-  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [photoUris, setPhotoUris] = useState<string[]>([]);
   const [ocrState, setOcrState] = useState<'idle' | 'scanned'>('idle');
   const [ocrTitle, setOcrTitle] = useState('');
   const [saving, setSaving] = useState(false);
@@ -81,9 +91,19 @@ export function RecipeCapture({ onSaved }: { onSaved?: () => void }) {
     );
   }
 
-  async function pickPhoto() {
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7 });
-    if (!result.canceled && result.assets[0]) setPhotoUri(result.assets[0].uri);
+  async function pickPhotos() {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.7,
+      allowsMultipleSelection: true,
+    });
+    if (!result.canceled && result.assets.length) {
+      setPhotoUris((prev) => [...prev, ...result.assets.map((a) => a.uri)]);
+    }
+  }
+
+  function removePhoto(uri: string) {
+    setPhotoUris((prev) => prev.filter((u) => u !== uri));
   }
 
   function scanPhoto() {
@@ -95,24 +115,24 @@ export function RecipeCapture({ onSaved }: { onSaved?: () => void }) {
     if (!ocrTitle.trim() || !user) return;
     setSaving(true);
     try {
-      let imageUrl: string | null = null;
-      if (photoUri) {
-        const response = await fetch(photoUri);
+      const imageUrls: string[] = [];
+      for (const uri of photoUris) {
+        const response = await fetch(uri);
         const blob = await response.blob();
-        const path = `${user.id}/${Date.now()}.jpg`;
+        const path = `${user.id}/${Date.now()}-${imageUrls.length}.jpg`;
         const { error: uploadError } = await supabase.storage.from('recipe-photos').upload(path, blob, {
           contentType: 'image/jpeg',
         });
         if (!uploadError) {
           const { data } = supabase.storage.from('recipe-photos').getPublicUrl(path);
-          imageUrl = data.publicUrl;
+          imageUrls.push(data.publicUrl);
         }
       }
       addRecipe.mutate(
-        { title: ocrTitle.trim(), source: 'photo', image_url: imageUrl },
+        { title: ocrTitle.trim(), source: 'photo', image_urls: imageUrls },
         {
           onSuccess: () => {
-            setPhotoUri(null);
+            setPhotoUris([]);
             setOcrState('idle');
             setOcrTitle('');
             onSaved?.();
@@ -152,7 +172,7 @@ export function RecipeCapture({ onSaved }: { onSaved?: () => void }) {
             numberOfLines={6}
             style={[styles.input, styles.textarea]}
           />
-          <PrimaryButton label="Save recipe" onPress={submitManual} loading={addRecipe.isPending} />
+          <SubmitButton label="Save recipe" onPress={submitManual} loading={addRecipe.isPending} />
         </View>
       ) : null}
 
@@ -183,32 +203,42 @@ export function RecipeCapture({ onSaved }: { onSaved?: () => void }) {
               style={styles.input}
             />
           ) : null}
-          <PrimaryButton label="Save to library" onPress={submitLink} loading={addRecipe.isPending} />
+          <SubmitButton label="Save to library" onPress={submitLink} loading={addRecipe.isPending} />
         </View>
       ) : null}
 
       {method === 'photo' ? (
         <View style={{ gap: 10 }}>
           <Text style={styles.helpText}>
-            Take or choose a photo or screenshot of a recipe — we'll scan it and pull out the title, ingredients and
-            steps.
+            Take or choose one or more photos of a recipe — several pages of a handwritten card, for example — and
+            we'll scan them together and pull out the title, ingredients and steps.
           </Text>
-          <Pressable onPress={pickPhoto} style={styles.photoSlot}>
-            {photoUri ? (
-              <Image source={{ uri: photoUri }} style={styles.photoPreview} />
-            ) : (
-              <Text style={styles.photoPlaceholder}>Tap to add a photo</Text>
-            )}
+          {photoUris.length > 0 ? (
+            <View style={styles.photoGrid}>
+              {photoUris.map((uri) => (
+                <View key={uri} style={styles.photoThumbWrap}>
+                  <Image source={{ uri }} style={styles.photoThumb} />
+                  <Pressable onPress={() => removePhoto(uri)} style={styles.photoRemove} hitSlop={6}>
+                    <Text style={styles.photoRemoveText}>×</Text>
+                  </Pressable>
+                </View>
+              ))}
+            </View>
+          ) : null}
+          <Pressable onPress={pickPhotos} style={styles.photoSlot}>
+            <Text style={styles.photoPlaceholder}>
+              {photoUris.length > 0 ? '+ Add more photos' : 'Tap to add photos'}
+            </Text>
           </Pressable>
           {ocrState === 'idle' ? (
-            <PrimaryButton label="Add photo" onPress={scanPhoto} disabled={!photoUri} />
+            <SubmitButton label="Scan photos" onPress={scanPhoto} disabled={photoUris.length === 0} />
           ) : (
             <>
               <View style={styles.ocrBanner}>
                 <Text style={styles.ocrBannerText}>✓ Title, ingredients & 6 steps extracted — review below</Text>
               </View>
               <TextInput value={ocrTitle} onChangeText={setOcrTitle} style={styles.input} />
-              <PrimaryButton label="Save to library" onPress={submitPhoto} loading={saving} />
+              <SubmitButton label="Save to library" onPress={submitPhoto} loading={saving} />
             </>
           )}
         </View>
@@ -271,7 +301,7 @@ const styles = StyleSheet.create({
   helpText: { fontSize: 12, color: colors.inkSoft, lineHeight: 18, marginBottom: 10, fontFamily: fonts.ui },
   photoSlot: {
     width: '100%',
-    height: 130,
+    height: 70,
     borderRadius: 10,
     backgroundColor: colors.paper,
     borderWidth: 1,
@@ -282,7 +312,21 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   photoPlaceholder: { fontSize: 13, color: colors.inkFaint, fontFamily: fonts.ui },
-  photoPreview: { width: '100%', height: '100%' },
+  photoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  photoThumbWrap: { width: 76, height: 76, borderRadius: 10, overflow: 'visible' },
+  photoThumb: { width: '100%', height: '100%', borderRadius: 10 },
+  photoRemove: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  photoRemoveText: { color: colors.paper, fontSize: 13, lineHeight: 15 },
   ocrBanner: { backgroundColor: colors.sageSoft, borderRadius: radii.sm, paddingHorizontal: 11, paddingVertical: 9 },
   ocrBannerText: { fontSize: 11.5, color: colors.marigoldInk, fontWeight: '600', fontFamily: fonts.uiSemiBold },
   emailBox: {

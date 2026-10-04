@@ -98,15 +98,27 @@ export function PrimaryButton({
 export function SecondaryButton({
   label,
   onPress,
+  loading,
+  disabled,
   style,
 }: {
   label: string;
   onPress: () => void;
+  loading?: boolean;
+  disabled?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
   return (
-    <Pressable onPress={onPress} style={[styles.secondaryButton, style]}>
-      <Text style={styles.secondaryButtonText}>{label}</Text>
+    <Pressable
+      onPress={onPress}
+      disabled={disabled || loading}
+      style={[styles.secondaryButton, (disabled || loading) && { opacity: 0.6 }, style]}
+    >
+      {loading ? (
+        <ActivityIndicator color={colors.inkSoft} />
+      ) : (
+        <Text style={styles.secondaryButtonText}>{label}</Text>
+      )}
     </Pressable>
   );
 }
