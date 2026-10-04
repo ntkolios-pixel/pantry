@@ -34,13 +34,13 @@ export default function Setup() {
 
   async function continueOn() {
     await updateProfile({ onboarding_stage: 'recipes' });
-    router.push('/(onboarding)/recipes');
+    router.replace('/(onboarding)/recipes');
   }
 
   return (
     <Screen contentStyle={{ paddingTop: 56, gap: 22 }}>
       <View>
-        <BackLink label="← Back" onPress={() => router.back()} />
+        <BackLink label="← Back" onPress={() => router.replace('/(onboarding)/household')} />
         <View style={{ height: 10 }} />
         <StepLabel step={3} of={4} />
         <Text style={styles.title}>Tell us about your eaters</Text>

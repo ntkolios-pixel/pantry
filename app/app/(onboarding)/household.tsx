@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors, fonts, radii, spacing } from '../../constants/theme';
-import { BackLink, PrimaryButton, StepLabel } from '../../components/ui';
+import { PrimaryButton, StepLabel } from '../../components/ui';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   useAddHouseholdMember,
@@ -63,14 +63,12 @@ export default function Household() {
 
   async function continueOn() {
     await updateProfile({ onboarding_stage: 'setup' });
-    router.push('/(onboarding)/setup');
+    router.replace('/(onboarding)/setup');
   }
 
   return (
     <View style={styles.wrap}>
       <View>
-        <BackLink label="← Back" onPress={() => router.back()} />
-        <View style={{ height: 10 }} />
         <StepLabel step={2} of={4} />
         <Text style={styles.title}>Who are you cooking for?</Text>
         <Text style={styles.body}>Add everyone in your household — we'll ask about their preferences next.</Text>

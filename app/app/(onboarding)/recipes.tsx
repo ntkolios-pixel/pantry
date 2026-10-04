@@ -42,7 +42,7 @@ export default function Recipes() {
   return (
     <Screen scroll={false} contentStyle={{ justifyContent: 'center', gap: 22 }}>
       <View>
-        <BackLink label="← Back" onPress={() => router.back()} />
+        <BackLink label="← Back" onPress={() => router.replace('/(onboarding)/setup')} />
         <View style={{ height: 10 }} />
         <StepLabel step={4} of={4} />
         <Text style={styles.title}>Add a few recipes</Text>
