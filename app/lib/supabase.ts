@@ -1,18 +1,62 @@
 import 'react-native-url-polyfill/auto';
 import { createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
+import { Directory, File, Paths } from 'expo-file-system';
+import * as Crypto from 'expo-crypto';
+import * as aesjs from 'aes-js';
 import Constants from 'expo-constants';
 
-// expo-secure-store keeps the session in the device's Keychain (iOS) /
-// Keystore (Android) — encrypted at rest and persists across app restarts,
-// unlike the in-memory stand-in used earlier. It's a core Expo SDK module
-// (unlike @react-native-async-storage/async-storage, a community package),
-// so it doesn't have the "native module is null" linking problem that broke
-// login before.
+// A Supabase session (access token + refresh token + account info) is
+// usually too big for a single expo-secure-store item — iOS Keychain
+// enforces a small practical size limit there, and SecureStore writes over
+// it fail. So the actual session is encrypted and written to a plain file
+// (expo-file-system — a core Expo module, unlike the community
+// @react-native-async-storage/async-storage package that caused a native
+// module linking error earlier); only the small AES key lives in
+// SecureStore, which is small enough to fit and is itself encrypted at rest
+// in the device Keychain/Keystore.
+const sessionDir = new Directory(Paths.document, 'session');
+
+function sessionFile(key: string): File {
+  return new File(sessionDir, `${encodeURIComponent(key)}.bin`);
+}
+
+function keyStorageName(key: string) {
+  return `${key}-enc-key`;
+}
+
+async function getOrCreateEncryptionKey(key: string): Promise<Uint8Array> {
+  const existing = await SecureStore.getItemAsync(keyStorageName(key));
+  if (existing) return aesjs.utils.hex.toBytes(existing);
+  const bytes = await Crypto.getRandomBytesAsync(32);
+  await SecureStore.setItemAsync(keyStorageName(key), aesjs.utils.hex.fromBytes(bytes));
+  return bytes;
+}
+
 const secureStorage = {
-  getItem: (key: string) => SecureStore.getItemAsync(key),
-  setItem: (key: string, value: string) => SecureStore.setItemAsync(key, value),
-  removeItem: (key: string) => SecureStore.deleteItemAsync(key),
+  getItem: async (key: string) => {
+    const file = sessionFile(key);
+    if (!file.exists) return null;
+    const encryptedHex = file.textSync();
+    const encryptionKey = await SecureStore.getItemAsync(keyStorageName(key));
+    if (!encryptionKey) return null;
+    const cipher = new aesjs.ModeOfOperation.ctr(aesjs.utils.hex.toBytes(encryptionKey), new aesjs.Counter(1));
+    const decryptedBytes = cipher.decrypt(aesjs.utils.hex.toBytes(encryptedHex));
+    return aesjs.utils.utf8.fromBytes(decryptedBytes);
+  },
+  setItem: async (key: string, value: string) => {
+    const encryptionKey = await getOrCreateEncryptionKey(key);
+    const cipher = new aesjs.ModeOfOperation.ctr(encryptionKey, new aesjs.Counter(1));
+    const encryptedBytes = cipher.encrypt(aesjs.utils.utf8.toBytes(value));
+    const file = sessionFile(key);
+    file.create({ intermediates: true, overwrite: true });
+    file.write(aesjs.utils.hex.fromBytes(encryptedBytes));
+  },
+  removeItem: async (key: string) => {
+    const file = sessionFile(key);
+    if (file.exists) file.delete();
+    await SecureStore.deleteItemAsync(keyStorageName(key));
+  },
 };
 
 const extra = Constants.expoConfig?.extra ?? {};
