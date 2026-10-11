@@ -230,10 +230,7 @@ async function callClaude(prompt: string) {
 
   if (!response.ok) {
     const text = await response.text();
-    const fingerprint = ANTHROPIC_API_KEY
-      ? `len=${ANTHROPIC_API_KEY.length} start=${ANTHROPIC_API_KEY.slice(0, 14)} end=${ANTHROPIC_API_KEY.slice(-6)}`
-      : 'not set';
-    throw new Error(`Anthropic API error (${response.status}): ${text} [key fingerprint: ${fingerprint}]`);
+    throw new Error(`Anthropic API error (${response.status}): ${text}`);
   }
 
   const data = await response.json();
