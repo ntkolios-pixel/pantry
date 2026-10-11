@@ -14,6 +14,13 @@ import { useAllSundayPrepItems } from '../../hooks/usePrep';
 import { useGenerateWeeklyPlan } from '../../hooks/useGeneratePlan';
 import { formatWeekOf, getCurrentWeekStart } from '../../lib/dates';
 
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
 export default function Home() {
   const router = useRouter();
   const { profile, updateProfile } = useAuth();
@@ -56,7 +63,7 @@ export default function Home() {
     const memberCount = members?.length ?? 0;
     return (
       <View style={{ flex: 1, backgroundColor: colors.cream }}>
-        <Header title={`Good evening, ${firstName === 'Your' ? 'there' : firstName}`} />
+        <Header title={`${getGreeting()}, ${firstName === 'Your' ? 'there' : firstName}`} />
         <Screen>
           <Text style={styles.firstTitle}>
             You&apos;re all set up{profile?.name.trim() ? `, ${firstName}` : ''}
@@ -75,7 +82,7 @@ export default function Home() {
             loading={generatePlan.isPending}
             style={{ marginTop: 8 }}
           />
-          <SecondaryButton label="Add more recipes first" onPress={() => router.push('/(tabs)/library')} />
+          <SecondaryButton label="Add more recipes first" onPress={() => router.push('/(tabs)/library')} style={{ marginTop: 10 }} />
         </Screen>
       </View>
     );
@@ -89,7 +96,7 @@ export default function Home() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.cream }}>
-      <Header title={`Good evening, ${firstName === 'Your' ? 'there' : firstName}`} />
+      <Header title={`${getGreeting()}, ${firstName === 'Your' ? 'there' : firstName}`} />
       <Screen>
         {isNewWeek && !newWeekDismissed ? (
           <View style={styles.newWeekCard}>
