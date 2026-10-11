@@ -77,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         LocalAuthentication.hasHardwareAsync(),
         LocalAuthentication.isEnrolledAsync(),
       ]);
+      console.log('[auth] unlock: hasHardware=', hasHardware, 'isEnrolled=', isEnrolled);
       if (!hasHardware || !isEnrolled) {
         // No Face ID/Touch ID/passcode set up on this device — don't trap
         // the user behind a lock screen they have no way to open.
@@ -84,6 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       const result = await LocalAuthentication.authenticateAsync({ promptMessage: 'Unlock Pantry' });
+      console.log('[auth] unlock: authenticateAsync result=', JSON.stringify(result));
       if (result.success) setLocked(false);
     } catch (err) {
       console.warn('[auth] biometric unlock failed, letting the user in', err);
