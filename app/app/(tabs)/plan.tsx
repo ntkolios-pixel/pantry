@@ -119,7 +119,11 @@ export default function Plan() {
               </View>
               <View style={{ gap: 9 }}>
                 {sm.courses.map((c) => (
-                  <ShabbatCourseRow key={c.id} course={c} onCommit={(text) => updateCourse.mutate({ id: c.id, family_desc: text })} />
+                  <ShabbatCourseRow
+                    key={c.id}
+                    course={c}
+                    onCommit={(patch) => updateCourse.mutate({ id: c.id, patch })}
+                  />
                 ))}
               </View>
             </Card>
@@ -192,7 +196,7 @@ function WeekdayCard({
           ) : null}
           {baseLabel ? (
             <View style={styles.baseRow}>
-              <Tag bg={colors.line} fg={colors.inkSoft} label="♻ SUNDAY PREP" />
+              <Tag bg={colors.line} fg={colors.inkSoft} label="SUNDAY PREP" />
               <Text style={styles.baseText}>{baseLabel}</Text>
             </View>
           ) : null}
@@ -214,33 +218,52 @@ function ShabbatCourseRow({
   onCommit,
 }: {
   course: { id: string; course_name: string; family_desc: string; kids_desc: string | null; stealth_veg: string | null };
-  onCommit: (text: string) => void;
+  onCommit: (patch: { family_desc?: string; kids_desc?: string | null; stealth_veg?: string | null }) => void;
 }) {
-  const [text, setText] = useState(course.family_desc);
-  const debouncedCommit = useDebouncedCallback(onCommit, 600);
+  const [familyDesc, setFamilyDesc] = useState(course.family_desc);
+  const [kidsDesc, setKidsDesc] = useState(course.kids_desc ?? '');
+  const [stealthVeg, setStealthVeg] = useState(course.stealth_veg ?? '');
+  const debouncedCommitFamily = useDebouncedCallback((v: string) => onCommit({ family_desc: v }), 600);
+  const debouncedCommitKids = useDebouncedCallback((v: string) => onCommit({ kids_desc: v || null }), 600);
+  const debouncedCommitStealth = useDebouncedCallback((v: string) => onCommit({ stealth_veg: v || null }), 600);
+
   return (
     <View>
       <Text style={styles.courseName}>{course.course_name}</Text>
       <TextInput
-        value={text}
+        value={familyDesc}
         onChangeText={(v) => {
-          setText(v);
-          debouncedCommit(v);
+          setFamilyDesc(v);
+          debouncedCommitFamily(v);
         }}
         style={styles.courseInput}
       />
-      {course.kids_desc ? (
-        <View style={styles.courseKidsBox}>
-          <Text style={styles.courseKidsLabel}>KIDS</Text>
-          <Text style={styles.courseKidsText}>{course.kids_desc}</Text>
-        </View>
-      ) : null}
-      {course.stealth_veg ? (
-        <View style={styles.courseStealthRow}>
-          <Text style={styles.courseStealthLabel}>✦ STEALTH</Text>
-          <Text style={styles.courseStealthText}>{course.stealth_veg}</Text>
-        </View>
-      ) : null}
+      <View style={styles.courseKidsBox}>
+        <Text style={styles.courseKidsLabel}>KIDS</Text>
+        <TextInput
+          value={kidsDesc}
+          onChangeText={(v) => {
+            setKidsDesc(v);
+            debouncedCommitKids(v);
+          }}
+          placeholder="Kids version (optional)"
+          placeholderTextColor={colors.inkFaint}
+          style={[styles.courseKidsText, styles.courseSubInput]}
+        />
+      </View>
+      <View style={styles.courseStealthRow}>
+        <Text style={styles.courseStealthLabel}>✦ STEALTH</Text>
+        <TextInput
+          value={stealthVeg}
+          onChangeText={(v) => {
+            setStealthVeg(v);
+            debouncedCommitStealth(v);
+          }}
+          placeholder="Hidden veggie (optional)"
+          placeholderTextColor={colors.inkFaint}
+          style={[styles.courseStealthText, styles.courseSubInput]}
+        />
+      </View>
     </View>
   );
 }
@@ -317,10 +340,11 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     paddingVertical: 4,
   },
-  courseKidsBox: { flexDirection: 'row', gap: 7, backgroundColor: colors.marigoldSoft, borderRadius: 7, padding: 8, marginTop: 4, alignItems: 'flex-start' },
+  courseKidsBox: { flexDirection: 'row', gap: 7, backgroundColor: colors.marigoldSoft, borderRadius: 7, padding: 8, marginTop: 4, alignItems: 'center' },
   courseKidsLabel: { fontSize: 10, fontWeight: '700', color: colors.marigoldInk, fontFamily: fonts.uiBold },
   courseKidsText: { fontSize: 12, color: colors.inkSoft, lineHeight: 16, flex: 1, fontFamily: fonts.ui },
-  courseStealthRow: { marginTop: 4, flexDirection: 'row', gap: 6, alignItems: 'flex-start' },
+  courseSubInput: { paddingVertical: 2 },
+  courseStealthRow: { marginTop: 4, flexDirection: 'row', gap: 6, alignItems: 'center' },
   courseStealthLabel: { fontSize: 9.5, fontWeight: '700', color: colors.ink, fontFamily: fonts.uiBold },
   courseStealthText: { fontSize: 11.5, color: colors.inkSoft, lineHeight: 16, flex: 1, fontFamily: fonts.ui },
 });

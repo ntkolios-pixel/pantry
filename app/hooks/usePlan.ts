@@ -88,8 +88,14 @@ export function useUpdateShabbatCourse() {
   const { user } = useAuth();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, family_desc }: { id: string; family_desc: string }) => {
-      const { error } = await supabase.from('shabbat_courses').update({ family_desc }).eq('id', id);
+    mutationFn: async ({
+      id,
+      patch,
+    }: {
+      id: string;
+      patch: Partial<Pick<ShabbatCourse, 'family_desc' | 'kids_desc' | 'stealth_veg'>>;
+    }) => {
+      const { error } = await supabase.from('shabbat_courses').update(patch).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['shabbat_meals', user?.id] }),

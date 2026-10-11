@@ -40,7 +40,7 @@ export default function MealDetail() {
       ) : null}
       {baseLabel ? (
         <View style={styles.section}>
-          <Text style={styles.sectionHeading}>♻ Sunday prep</Text>
+          <Text style={styles.sectionHeading}>Sunday prep</Text>
           <Text style={styles.sectionBody}>{baseLabel}</Text>
         </View>
       ) : null}
