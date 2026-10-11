@@ -236,6 +236,7 @@ function ShabbatCourseRow({
           setFamilyDesc(v);
           debouncedCommitFamily(v);
         }}
+        multiline
         style={styles.courseInput}
       />
       <View style={styles.courseKidsBox}>
@@ -248,6 +249,7 @@ function ShabbatCourseRow({
           }}
           placeholder="Kids version (optional)"
           placeholderTextColor={colors.inkFaint}
+          multiline
           style={[styles.courseKidsText, styles.courseSubInput]}
         />
       </View>
@@ -261,6 +263,7 @@ function ShabbatCourseRow({
           }}
           placeholder="Hidden veggie (optional)"
           placeholderTextColor={colors.inkFaint}
+          multiline
           style={[styles.courseStealthText, styles.courseSubInput]}
         />
       </View>
@@ -340,11 +343,11 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     paddingVertical: 4,
   },
-  courseKidsBox: { flexDirection: 'row', gap: 7, backgroundColor: colors.marigoldSoft, borderRadius: 7, padding: 8, marginTop: 4, alignItems: 'center' },
-  courseKidsLabel: { fontSize: 10, fontWeight: '700', color: colors.marigoldInk, fontFamily: fonts.uiBold },
+  courseKidsBox: { flexDirection: 'row', gap: 7, backgroundColor: colors.marigoldSoft, borderRadius: 7, padding: 8, marginTop: 4, alignItems: 'flex-start' },
+  courseKidsLabel: { fontSize: 10, fontWeight: '700', color: colors.marigoldInk, fontFamily: fonts.uiBold, flexShrink: 0 },
   courseKidsText: { fontSize: 12, color: colors.inkSoft, lineHeight: 16, flex: 1, fontFamily: fonts.ui },
   courseSubInput: { paddingVertical: 2 },
-  courseStealthRow: { marginTop: 4, flexDirection: 'row', gap: 6, alignItems: 'center' },
-  courseStealthLabel: { fontSize: 9.5, fontWeight: '700', color: colors.ink, fontFamily: fonts.uiBold },
+  courseStealthRow: { marginTop: 4, flexDirection: 'row', gap: 6, alignItems: 'flex-start' },
+  courseStealthLabel: { fontSize: 9.5, fontWeight: '700', color: colors.ink, fontFamily: fonts.uiBold, flexShrink: 0 },
   courseStealthText: { fontSize: 11.5, color: colors.inkSoft, lineHeight: 16, flex: 1, fontFamily: fonts.ui },
 });
