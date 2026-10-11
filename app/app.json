@@ -36,6 +36,12 @@
         {
           "photosPermission": "Pantry needs access to your photos so you can add a picture of a recipe."
         }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Pantry uses Face ID to unlock the app instead of logging in each time."
+        }
       ]
     ],
     "experiments": {

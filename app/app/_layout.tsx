@@ -14,6 +14,7 @@ import {
 import { colors } from '../constants/theme';
 import { queryClient } from '../lib/queryClient';
 import { AuthProvider } from '../contexts/AuthContext';
+import { LockGate } from '../components/LockGate';
 
 export default function RootLayout() {
   const [dmLoaded] = useDmSans({ DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold, DMSans_700Bold });
@@ -31,15 +32,17 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.cream } }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(onboarding)" />
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="meal/[id]" options={{ presentation: 'card' }} />
-            <Stack.Screen name="family" options={{ presentation: 'card' }} />
-            <Stack.Screen name="library/[id]" options={{ presentation: 'card' }} />
-            <Stack.Screen name="library/add" options={{ presentation: 'card' }} />
-          </Stack>
+          <LockGate>
+            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.cream } }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(onboarding)" />
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="meal/[id]" options={{ presentation: 'card' }} />
+              <Stack.Screen name="family" options={{ presentation: 'card' }} />
+              <Stack.Screen name="library/[id]" options={{ presentation: 'card' }} />
+              <Stack.Screen name="library/add" options={{ presentation: 'card' }} />
+            </Stack>
+          </LockGate>
         </AuthProvider>
       </QueryClientProvider>
     </SafeAreaProvider>

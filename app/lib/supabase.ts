@@ -1,28 +1,19 @@
 import 'react-native-url-polyfill/auto';
 import { createClient } from '@supabase/supabase-js';
+import * as SecureStore from 'expo-secure-store';
 import Constants from 'expo-constants';
 
-// In-memory session storage. @react-native-async-storage/async-storage's
-// native module isn't reliably available in every Expo Go install (a known
-// rough edge, not specific to this app), which surfaced as "native module is
-// null, cannot access legacy storage" and silently broke login. Swapping to
-// a plain in-memory store sidesteps that native dependency entirely.
-// Trade-off: the session won't survive a full app restart/reload while
-// testing in Expo Go — you'll need to log in again after each reload. A real
-// build (EAS/dev client) links the native module properly and can switch
-// back to AsyncStorage for persistence across restarts.
-const memoryStorage = (() => {
-  const store = new Map<string, string>();
-  return {
-    getItem: async (key: string) => store.get(key) ?? null,
-    setItem: async (key: string, value: string) => {
-      store.set(key, value);
-    },
-    removeItem: async (key: string) => {
-      store.delete(key);
-    },
-  };
-})();
+// expo-secure-store keeps the session in the device's Keychain (iOS) /
+// Keystore (Android) — encrypted at rest and persists across app restarts,
+// unlike the in-memory stand-in used earlier. It's a core Expo SDK module
+// (unlike @react-native-async-storage/async-storage, a community package),
+// so it doesn't have the "native module is null" linking problem that broke
+// login before.
+const secureStorage = {
+  getItem: (key: string) => SecureStore.getItemAsync(key),
+  setItem: (key: string, value: string) => SecureStore.setItemAsync(key, value),
+  removeItem: (key: string) => SecureStore.deleteItemAsync(key),
+};
 
 const extra = Constants.expoConfig?.extra ?? {};
 
@@ -46,7 +37,7 @@ export const supabase = createClient(
   supabaseAnonKey || 'placeholder-anon-key',
   {
     auth: {
-      storage: memoryStorage,
+      storage: secureStorage,
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,

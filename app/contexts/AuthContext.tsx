@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
+import * as LocalAuthentication from 'expo-local-authentication';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import type { Profile } from '../lib/database.types';
 import { signInWithGoogle, signInWithApple } from '../lib/oauth';
@@ -10,6 +11,10 @@ interface AuthContextValue {
   session: Session | null;
   user: User | null;
   profile: Profile | null;
+  /** True when a session was restored from a previous app launch and still
+   * needs a Face ID / Touch ID / passcode check before the app is usable. */
+  locked: boolean;
+  unlock: () => Promise<void>;
   signUpWithEmail: (name: string, email: string, password: string) => Promise<{ needsEmailConfirmation: boolean }>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
@@ -59,10 +64,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [locked, setLocked] = useState(false);
 
   const loadProfile = useCallback(async (userId: string) => {
     const p = await fetchProfileWithRetry(userId);
     setProfile(p);
+  }, []);
+
+  const unlock = useCallback(async () => {
+    try {
+      const [hasHardware, isEnrolled] = await Promise.all([
+        LocalAuthentication.hasHardwareAsync(),
+        LocalAuthentication.isEnrolledAsync(),
+      ]);
+      if (!hasHardware || !isEnrolled) {
+        // No Face ID/Touch ID/passcode set up on this device — don't trap
+        // the user behind a lock screen they have no way to open.
+        setLocked(false);
+        return;
+      }
+      const result = await LocalAuthentication.authenticateAsync({ promptMessage: 'Unlock Pantry' });
+      if (result.success) setLocked(false);
+    } catch (err) {
+      console.warn('[auth] biometric unlock failed, letting the user in', err);
+      setLocked(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -75,7 +101,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ReturnType<typeof supabase.auth.getSession>
     >).then(async ({ data }) => {
       setSession(data.session);
-      if (data.session?.user) await loadProfile(data.session.user.id);
+      if (data.session?.user) {
+        await loadProfile(data.session.user.id);
+        // A session restored from a previous launch needs a fresh unlock —
+        // a session just created by an interactive sign-in (below) does not.
+        setLocked(true);
+        unlock();
+      }
       setLoading(false);
     });
 
@@ -89,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => sub.subscription.unsubscribe();
-  }, [loadProfile]);
+  }, [loadProfile, unlock]);
 
   const signUpWithEmail = useCallback(async (name: string, email: string, password: string) => {
     const { data, error } = await supabase.auth.signUp({
@@ -143,6 +175,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       session,
       user: session?.user ?? null,
       profile,
+      locked,
+      unlock,
       signUpWithEmail,
       signInWithEmail,
       signInWithGoogle,
@@ -151,7 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       refreshProfile,
       updateProfile,
     }),
-    [loading, session, profile, signUpWithEmail, signInWithEmail, signOut, refreshProfile, updateProfile]
+    [loading, session, profile, locked, unlock, signUpWithEmail, signInWithEmail, signOut, refreshProfile, updateProfile]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
