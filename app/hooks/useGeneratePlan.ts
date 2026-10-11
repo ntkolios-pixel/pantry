@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
+import { invokeEdgeFunction } from '../lib/invokeEdgeFunction';
 import { useAuth } from '../contexts/AuthContext';
 import { getCurrentWeekStart } from '../lib/dates';
 
@@ -14,28 +14,7 @@ export function useGenerateWeeklyPlan() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke('generate-weekly-plan', {
-        body: { week_start: getCurrentWeekStart() },
-      });
-      if (error) {
-        // supabase-js only gives a generic "non-2xx" message here — the actual
-        // reason (e.g. "add a recipe first") is in the function's JSON body.
-        const context = (error as { context?: Response }).context;
-        let specificMessage: string | null = null;
-        if (context) {
-          try {
-            const body = await context.json();
-            specificMessage = body?.error ?? null;
-          } catch {
-            // response wasn't JSON — fall through to the generic error below
-          }
-        }
-        throw new Error(specificMessage ?? error.message);
-      }
-      if (data?.error) throw new Error(data.error);
-      return data;
-    },
+    mutationFn: () => invokeEdgeFunction('generate-weekly-plan', { week_start: getCurrentWeekStart() }),
     onSuccess: async () => {
       await refreshProfile();
       qc.invalidateQueries({ queryKey: ['bases', user?.id] });
