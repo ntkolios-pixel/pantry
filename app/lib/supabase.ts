@@ -35,27 +35,50 @@ async function getOrCreateEncryptionKey(key: string): Promise<Uint8Array> {
 
 const secureStorage = {
   getItem: async (key: string) => {
-    const file = sessionFile(key);
-    if (!file.exists) return null;
-    const encryptedHex = file.textSync();
-    const encryptionKey = await SecureStore.getItemAsync(keyStorageName(key));
-    if (!encryptionKey) return null;
-    const cipher = new aesjs.ModeOfOperation.ctr(aesjs.utils.hex.toBytes(encryptionKey), new aesjs.Counter(1));
-    const decryptedBytes = cipher.decrypt(aesjs.utils.hex.toBytes(encryptedHex));
-    return aesjs.utils.utf8.fromBytes(decryptedBytes);
+    try {
+      const file = sessionFile(key);
+      if (!file.exists) {
+        console.log('[secureStorage] getItem: no file for', key);
+        return null;
+      }
+      const encryptedHex = file.textSync();
+      const encryptionKey = await SecureStore.getItemAsync(keyStorageName(key));
+      if (!encryptionKey) {
+        console.log('[secureStorage] getItem: file exists but no encryption key for', key);
+        return null;
+      }
+      const cipher = new aesjs.ModeOfOperation.ctr(aesjs.utils.hex.toBytes(encryptionKey), new aesjs.Counter(1));
+      const decryptedBytes = cipher.decrypt(aesjs.utils.hex.toBytes(encryptedHex));
+      const value = aesjs.utils.utf8.fromBytes(decryptedBytes);
+      console.log('[secureStorage] getItem: restored', key, 'len=', value.length);
+      return value;
+    } catch (err) {
+      console.warn('[secureStorage] getItem FAILED for', key, err);
+      return null;
+    }
   },
   setItem: async (key: string, value: string) => {
-    const encryptionKey = await getOrCreateEncryptionKey(key);
-    const cipher = new aesjs.ModeOfOperation.ctr(encryptionKey, new aesjs.Counter(1));
-    const encryptedBytes = cipher.encrypt(aesjs.utils.utf8.toBytes(value));
-    const file = sessionFile(key);
-    file.create({ intermediates: true, overwrite: true });
-    file.write(aesjs.utils.hex.fromBytes(encryptedBytes));
+    try {
+      const encryptionKey = await getOrCreateEncryptionKey(key);
+      const cipher = new aesjs.ModeOfOperation.ctr(encryptionKey, new aesjs.Counter(1));
+      const encryptedBytes = cipher.encrypt(aesjs.utils.utf8.toBytes(value));
+      const file = sessionFile(key);
+      file.create({ intermediates: true, overwrite: true });
+      file.write(aesjs.utils.hex.fromBytes(encryptedBytes));
+      console.log('[secureStorage] setItem: wrote', key, 'len=', value.length, 'exists now=', file.exists);
+    } catch (err) {
+      console.warn('[secureStorage] setItem FAILED for', key, err);
+    }
   },
   removeItem: async (key: string) => {
-    const file = sessionFile(key);
-    if (file.exists) file.delete();
-    await SecureStore.deleteItemAsync(keyStorageName(key));
+    try {
+      const file = sessionFile(key);
+      if (file.exists) file.delete();
+      await SecureStore.deleteItemAsync(keyStorageName(key));
+      console.log('[secureStorage] removeItem:', key);
+    } catch (err) {
+      console.warn('[secureStorage] removeItem FAILED for', key, err);
+    }
   },
 };
 
